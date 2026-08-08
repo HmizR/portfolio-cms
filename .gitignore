@@ -3,6 +3,8 @@
 
 # Next.js
 /.next
+/.next-e2e
+/.next-build
 /out
 
 # test output

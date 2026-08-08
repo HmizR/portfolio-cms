@@ -1,6 +1,6 @@
 # PortfolioCMS
 
-PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the completed application foundation and responsive public shell; database-backed portfolio features are added incrementally in later milestones.
+PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, and secure single-administrator authentication.
 
 ## Foundation stack
 
@@ -23,11 +23,16 @@ PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired b
 npm install
 cp .env.example .env.local
 docker compose up -d postgres storage storage-init
+npm run db:migrate
 npm run db:check
 npm run dev
 ```
 
-On PowerShell, use `Copy-Item .env.example .env.local` instead of `cp`. Replace all example secrets before using anything beyond local development.
+On PowerShell, use `Copy-Item .env.example .env.local` instead of `cp`. Replace all example secrets before using anything beyond local development. Visit <http://localhost:3000/setup> once to create the administrator; after that, setup redirects to sign-in or the protected admin area.
+
+## Administrator access
+
+PortfolioCMS uses Better Auth with database sessions and HttpOnly cookies. There is no default password and the database enforces one administrator. See `docs/authentication.md` for the setup, session, rate-limit, and recovery model.
 
 ## Public shell
 
@@ -52,5 +57,6 @@ npm run build
 - `docs/database.md` documents the database foundation.
 - `docs/deployment.md` documents local and container deployment.
 - `docs/public-shell.md` documents the temporary public shell and fixture boundary.
+- `docs/authentication.md` documents administrator setup and authentication security.
 
 Do not begin a later milestone until the current milestone passes its required checks.

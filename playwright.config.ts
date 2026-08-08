@@ -8,7 +8,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: "html",
   use: {
-    baseURL: "http://127.0.0.1:3000",
+    baseURL: "http://127.0.0.1:3100",
     trace: "on-first-retry",
   },
   projects: [
@@ -18,8 +18,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
-    url: "http://127.0.0.1:3000/api/health",
+    command: "tsx scripts/start-e2e-server.ts",
+    url: "http://127.0.0.1:3100/api/health",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

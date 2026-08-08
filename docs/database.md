@@ -2,7 +2,7 @@
 
 PortfolioCMS uses PostgreSQL through Drizzle ORM and the `pg` driver.
 
-The schema entry point is `src/db/schema/index.ts`. It is intentionally empty during Milestone 0: domain tables and their checked-in Drizzle migrations are introduced by the milestone that owns each domain. Production deployment must use `npm run db:migrate`; destructive schema push is not a deployment workflow.
+The schema entry point is `src/db/schema/index.ts`. Milestone 2 owns the `users`, `accounts`, `sessions`, `verifications`, and `rate_limits` tables. Later domain tables are introduced only by their owning milestones. Production deployment must use `npm run db:migrate`; destructive schema push is not a deployment workflow.
 
 ## Commands
 
@@ -11,4 +11,6 @@ The schema entry point is `src/db/schema/index.ts`. It is intentionally empty du
 - `npm run db:migrate` applies checked-in migrations.
 - `npm run db:studio` opens Drizzle Studio for local inspection.
 
-All commands require `DATABASE_URL`. Timestamps in future schemas must use timezone-aware PostgreSQL types and be stored in UTC.
+All commands require `DATABASE_URL` and load the standard Next.js environment files, including `.env.local`. Authentication timestamps use timezone-aware PostgreSQL types and are stored in UTC.
+
+Playwright uses `TEST_DATABASE_URL` when supplied. Its database name must end in `_test`; when omitted locally, the test runner derives a sibling `_test` database from `DATABASE_URL`. It creates that database if necessary, applies checked-in migrations, and truncates only authentication tables before the run.

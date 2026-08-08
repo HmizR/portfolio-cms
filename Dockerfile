@@ -9,6 +9,16 @@ RUN npm ci
 FROM base AS builder
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
+ENV DATABASE_URL=postgresql://build:build@localhost:5432/build
+ENV APP_URL=http://localhost:3000
+ENV AUTH_SECRET=non-secret-build-placeholder-at-least-32-characters
+ENV S3_ENDPOINT=http://localhost:9000
+ENV S3_REGION=us-east-1
+ENV S3_BUCKET=portfoliocms
+ENV S3_ACCESS_KEY_ID=build
+ENV S3_SECRET_ACCESS_KEY=non-secret-build-placeholder
+ENV S3_FORCE_PATH_STYLE=true
+ENV MAX_UPLOAD_SIZE_MB=10
 RUN npm run build
 
 FROM node:22-alpine AS runner

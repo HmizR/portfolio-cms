@@ -18,6 +18,8 @@ services:
     ports:
       - "3000:3000"
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       storage:
@@ -29,6 +31,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-portfoliocms}:${POSTGRES_PASSWORD:-portfoliocms-dev}@postgres:5432/${POSTGRES_DB:-portfoliocms}
+    command: npm run db:migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
 
   postgres:
     image: postgres:17-alpine

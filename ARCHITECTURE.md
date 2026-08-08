@@ -184,7 +184,7 @@ when appropriate.
 
 ## Authentication
 
-- Better Auth or another well-maintained session-based authentication library
+- Better Auth with its Drizzle PostgreSQL adapter
 - Email/password for V1
 
 ## Validation
@@ -649,6 +649,11 @@ HttpOnly secure cookie
 
 Requirements:
 
+- Better Auth owns password hashing and opaque database sessions.
+- Authentication data lives in `users`, `accounts`, `sessions`, `verifications`, and `rate_limits`.
+- The database permits one logical administrator through a checked singleton constraint.
+- First-time signup is reachable only through the server-side `/setup` action; no public signup API route is mounted.
+- Login throttling uses the shared PostgreSQL `rate_limits` table and a keyed hash of the normalized email address, so limits are shared across application instances without storing the address in the limiter.
 - No token in localStorage.
 - Server checks session.
 - Server actions verify session.

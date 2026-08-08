@@ -16,11 +16,11 @@ Do not use this file as a replacement for requirements or architecture documenta
 
 Current phase:
 
-**Milestone 1 complete / ready for Milestone 2**
+**Milestone 2 complete / ready for Milestone 3**
 
 Overall status:
 
-**The application foundation and responsive public shell are implemented and validated. Milestone 2 has not started.**
+**The application foundation, responsive public shell, and single-administrator authentication are implemented and validated. Milestone 3 has not started.**
 
 ---
 
@@ -40,7 +40,7 @@ Current decisions:
 - Language: TypeScript
 - Database: PostgreSQL
 - ORM: Drizzle ORM
-- Authentication: session-based email/password
+- Authentication: Better Auth session-based email/password with the Drizzle PostgreSQL adapter
 - Admin UI: shadcn/ui
 - Public UI: Tailwind + custom Academic Pages-inspired styling
 - Markdown editor: CodeMirror 6
@@ -73,6 +73,8 @@ Confirmed:
 - Public URLs use slugs.
 - Database relations use stable IDs.
 - V1 has one logical administrator role.
+- The database enforces the single-administrator invariant.
+- Login throttling is database-backed and keyed by a non-reversible HMAC of the normalized email.
 - Content statuses are draft, published, archived.
 - Scheduled publishing is future work.
 - Raw HTML in Markdown is disabled by default.
@@ -147,23 +149,33 @@ Completion checks:
 
 ## Milestone 2 — Authentication
 
-Status: **Not started**
+Status: **Complete**
 
 Tasks:
 
-- [ ] Create users schema
-- [ ] Add migration
-- [ ] Implement first-time `/setup`
-- [ ] Disable setup after admin creation
-- [ ] Implement login
-- [ ] Implement logout
-- [ ] Implement secure password hashing
-- [ ] Implement sessions
-- [ ] Protect `/admin/**`
-- [ ] Protect admin mutations
-- [ ] Add login rate limiting where practical
-- [ ] Build admin shell/sidebar
-- [ ] Add auth tests
+- [x] Create users schema
+- [x] Add migration
+- [x] Implement first-time `/setup`
+- [x] Disable setup after admin creation
+- [x] Implement login
+- [x] Implement logout
+- [x] Implement secure password hashing
+- [x] Implement sessions
+- [x] Protect `/admin/**`
+- [x] Protect admin mutations
+- [x] Add login rate limiting where practical
+- [x] Build admin shell/sidebar
+- [x] Add auth tests
+
+Completion checks:
+
+- [x] `npm run lint`
+- [x] `npm run typecheck`
+- [x] `npm run test`
+- [x] `npm run test:e2e`
+- [x] `npm run build`
+- [x] Authentication migration generated, inspected, and applied to development and isolated test databases
+- [x] Authentication and deployment documentation updated
 
 ---
 
@@ -432,26 +444,26 @@ Tasks:
 
 # 6. Current Task
 
-**Milestone 1 — Public Shell is complete. No implementation task is currently in progress.**
+**Milestone 2 — Authentication is complete. No implementation task is currently in progress.**
 
-Completed public shell:
+Completed authentication:
 
-1. A server-rendered public route-group layout owns the public header, profile sidebar, readable content column, and footer.
-2. Temporary navigation, profile, site, and social-link fixtures live behind one typed boundary for later database replacement.
-3. The desktop two-column shell collapses into a stacked mobile layout without horizontal overflow.
-4. Mobile navigation uses a native keyboard-operable disclosure and adds no client-side JavaScript.
-5. The shell includes a skip link, visible focus states, semantic landmarks, reduced-motion handling, and accessible external-link notices.
-6. The homepage uses restrained academic typography, spacing, and text-first sample content rather than dashboard or card-heavy presentation.
-7. A public 404 state reuses the same shell and returns the correct HTTP status.
-8. README and `docs/public-shell.md` document the fixture boundary and responsive architecture.
+1. Better Auth owns email/password hashing and opaque PostgreSQL sessions through its Drizzle adapter.
+2. `/setup` creates the first administrator, is unavailable afterward, and cannot create a second user because the database enforces a singleton invariant.
+3. `/login` and `/setup` are explicitly dynamic so database and session state are evaluated on every request.
+4. `/admin/**` is protected by the server-side layout guard; logout independently invokes the same authorization guard.
+5. Login attempts are limited to five per 15-minute window in PostgreSQL, using an HMAC identifier instead of storing the administrator email in limiter records.
+6. The responsive admin shell provides an overview route, public-site link, administrator identity, and logout control without adding future content features.
+7. Playwright uses a guarded isolated `_test` database, applies checked-in migrations, and covers setup, HttpOnly cookie behavior, route protection, login, logout, and rate limiting.
+8. README, architecture, database, deployment, and authentication documentation describe the implemented behavior.
 
-Next recommended task: **Milestone 2 — Authentication**. It has not been started.
+Next recommended task: **Milestone 3 — Profile + Settings**. It has not been started.
 
 ---
 
 # 7. Known Issues
 
-- `npm audit --omit=dev` reports zero runtime vulnerabilities. The full development dependency audit reports four moderate advisories from Drizzle Kit's deprecated nested `@esbuild-kit`/esbuild dependency; the installed Drizzle Kit version is the current stable line, and npm offers only a breaking downgrade as an automated fix.
+- `npm audit --omit=dev` reports five moderate development-server advisories through Drizzle Kit's deprecated nested `@esbuild-kit`/esbuild dependency. Better Auth's optional Drizzle Kit peer makes npm include the tooling path in the omit-dev report; the vulnerable package is not used by the production application runtime, and npm offers only a breaking Drizzle Kit downgrade as an automated fix.
 - The host currently uses Node.js 20.12.2, below the dependency toolchain's declared Node.js 20.19 minimum. Validation passes on the host, while the production Dockerfile uses Node.js 22.
 
 ---
@@ -461,7 +473,6 @@ Next recommended task: **Milestone 2 — Authentication**. It has not been start
 These do not block the next milestone unless discovered to matter during implementation.
 
 - Whether dark mode ships in V1 or immediately after V1.
-- Whether Better Auth is selected after confirming current compatibility with the chosen Next.js version.
 - Exact content revision design for V2.
 
 Do not stop implementation for these unless the current milestone genuinely depends on them.
@@ -512,6 +523,23 @@ Milestone 1 — 2026-08-08
 - Database migration: NOT APPLICABLE (no schema changes)
 - In-app browser manual inspection: UNAVAILABLE because no browser backend was exposed in the session; automated Chromium rendering checks passed
 
+Milestone 2 — 2026-08-08
+
+- `npm run lint`: PASS
+- `npm run typecheck`: PASS
+- `npm run test`: PASS (5 files, 9 tests, including validation and password hashing)
+- `npm run test:e2e`: PASS (4 Chromium tests; auth coverage includes setup, session cookie isolation, admin protection, invalid and valid login, logout, and rate limiting)
+- `npm run build`: PASS (`/login`, `/setup`, and `/admin` confirmed dynamic)
+- `npm run db:generate`: PASS (`drizzle/0000_fantastic_vengeance.sql`, 5 authentication tables)
+- `npm run db:migrate`: PASS against the development PostgreSQL service
+- Isolated Playwright database creation and migration: PASS
+- `npm run db:check`: PASS against the healthy Compose PostgreSQL service
+- `docker compose config --quiet`: PASS
+- `docker compose build app migrate`: PASS (Node 22 production application and one-shot migration images)
+- `docker compose run --rm migrate`: PASS against the healthy Compose PostgreSQL service
+- In-app browser manual inspection: UNAVAILABLE because no browser tab was exposed; automated Chromium rendering and interaction checks passed
+- `npm audit --omit=dev`: 5 moderate tooling-only esbuild advisories through Drizzle Kit; no production application code path is affected
+
 ---
 
 # 11. Important Handoff Notes
@@ -523,7 +551,7 @@ Any future coding session should:
 3. Read `ARCHITECTURE.md`.
 4. Read this file.
 5. Inspect the repository before making changes.
-6. Begin Milestone 2 only when it is the requested scope.
+6. Begin Milestone 3 only when it is the requested scope.
 7. Avoid prematurely implementing later milestones.
 8. Update this file before ending meaningful work.
 
@@ -541,3 +569,13 @@ Milestone 1 handoff decisions:
 - Keep the public shell server-rendered. Add a Client Component only when interaction cannot be expressed accessibly with native HTML.
 - Public defaults use a system sans-serif body stack, Georgia headings, and a restrained teal accent through controlled tokens.
 - Preserve the route-group boundary so future admin styling does not leak into public presentation.
+
+Milestone 2 handoff decisions:
+
+- Keep Better Auth server-only; no public catch-all signup route is mounted.
+- Keep `/login` and `/setup` dynamic because both depend on current database/session state.
+- Protect every future admin mutation with `requireAdmin()` even when its page already lives under the protected layout.
+- Do not remove the `users.singleton_key` constraint; it is the race-safe single-administrator enforcement boundary.
+- Use `TEST_DATABASE_URL` only for a database ending in `_test`; the E2E bootstrap intentionally truncates authentication tables there.
+- Profile and settings persistence remains Milestone 3 scope; do not add it to the authentication tables.
+- Drizzle commands load the standard Next.js environment files through `drizzle.config.ts`; developers do not need to export `DATABASE_URL` separately when `.env.local` is configured.

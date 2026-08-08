@@ -19,7 +19,12 @@
   "engines": {
     "node": ">=20.19.0"
   },
+  "overrides": {
+    "kysely": "0.28.17"
+  },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.6.26",
+    "better-auth": "^1.6.26",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.2",

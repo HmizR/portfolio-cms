@@ -1,5 +1,7 @@
 .git
 .next
+.next-build
+.next-e2e
 node_modules
 coverage
 playwright-report

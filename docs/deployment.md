@@ -7,10 +7,13 @@ PortfolioCMS supports a host-development workflow and an all-container Docker Co
 1. Copy `.env.example` to `.env.local` and replace every development secret.
 2. Start dependencies with `docker compose up -d postgres storage storage-init`.
 3. Install packages with `npm install`.
-4. Verify PostgreSQL with `npm run db:check`.
-5. Run the app with `npm run dev`.
+4. Apply migrations with `npm run db:migrate`.
+5. Verify PostgreSQL with `npm run db:check`.
+6. Run the app with `npm run dev` and complete `/setup` once.
 
 The app is available at <http://localhost:3000>, MinIO's S3 endpoint at <http://localhost:9000>, and its local console at <http://localhost:9001>.
+
+For browser tests, `TEST_DATABASE_URL` may point to a dedicated database whose name ends in `_test`. Never point it at a production or development database: the Playwright bootstrap truncates its authentication tables.
 
 ## Full Compose deployment
 
@@ -21,6 +24,8 @@ docker compose up --build -d
 ```
 
 The app container reaches PostgreSQL at `postgres:5432` and object storage at `storage:9000`; these service DNS names are deliberate. The Compose defaults are for local development only. Put a TLS-terminating reverse proxy in front of the app for an internet-facing deployment.
+
+Compose runs the checked-in migrations through its one-shot `migrate` service before the app starts. For deployments that do not use Compose, run `npm run db:migrate` as a release step before serving a new application version. Use a unique, random `AUTH_SECRET` of at least 32 characters and keep `APP_URL` equal to the externally visible origin so secure cookie and origin checks behave correctly.
 
 ## Health checks
 

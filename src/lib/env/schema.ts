@@ -7,6 +7,7 @@ const booleanFromString = z
 export const serverEnvironmentSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   DATABASE_URL: z.string().url().startsWith("postgresql://"),
+  TEST_DATABASE_URL: z.string().url().startsWith("postgresql://").optional(),
   APP_URL: z.string().url(),
   AUTH_SECRET: z.string().min(32),
   S3_ENDPOINT: z.string().url(),
