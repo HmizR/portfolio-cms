@@ -1,0 +1,28 @@
+# dependencies
+/node_modules
+
+# Next.js
+/.next
+/out
+
+# test output
+/coverage
+/playwright-report
+/test-results
+
+# local environment files
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# logs and OS/editor files
+*.log
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Drizzle local metadata generated outside checked-in migrations
+/drizzle/meta/_journal.json.bak

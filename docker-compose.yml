@@ -1,0 +1,85 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-portfoliocms}:${POSTGRES_PASSWORD:-portfoliocms-dev}@postgres:5432/${POSTGRES_DB:-portfoliocms}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      AUTH_SECRET: ${AUTH_SECRET:-development-only-secret-change-before-production}
+      S3_ENDPOINT: http://storage:9000
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_BUCKET: ${S3_BUCKET:-portfoliocms}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-portfoliocms}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-portfoliocms-storage-dev}
+      S3_FORCE_PATH_STYLE: "true"
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-10}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      storage:
+        condition: service_healthy
+      storage-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-portfoliocms}
+      POSTGRES_USER: ${POSTGRES_USER:-portfoliocms}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-portfoliocms-dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  storage:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY_ID:-portfoliocms}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_ACCESS_KEY:-portfoliocms-storage-dev}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - storage-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  storage-init:
+    image: minio/mc:latest
+    depends_on:
+      storage:
+        condition: service_healthy
+    environment:
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-portfoliocms}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-portfoliocms-storage-dev}
+      S3_BUCKET: ${S3_BUCKET:-portfoliocms}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        mc alias set local http://storage:9000 "$${S3_ACCESS_KEY_ID}" "$${S3_SECRET_ACCESS_KEY}" &&
+        mc mb --ignore-existing "local/$${S3_BUCKET}"
+
+volumes:
+  postgres-data:
+  storage-data:
