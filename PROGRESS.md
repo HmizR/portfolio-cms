@@ -16,11 +16,11 @@ Do not use this file as a replacement for requirements or architecture documenta
 
 Current phase:
 
-**Milestone 0 complete / ready for Milestone 1**
+**Milestone 1 complete / ready for Milestone 2**
 
 Overall status:
 
-**The production-ready application foundation is implemented and validated. Milestone 1 has not started.**
+**The application foundation and responsive public shell are implemented and validated. Milestone 2 has not started.**
 
 ---
 
@@ -118,21 +118,30 @@ Completion checks:
 
 ## Milestone 1 — Public Shell
 
-Status: **Not started**
+Status: **Complete**
 
 Tasks:
 
-- [ ] Build public site header
-- [ ] Build temporary fixture navigation
-- [ ] Build profile sidebar
-- [ ] Build main content layout
-- [ ] Build footer
-- [ ] Implement typography
-- [ ] Implement Academic Pages-inspired spacing
-- [ ] Implement responsive desktop/mobile layout
-- [ ] Add skip-to-content
-- [ ] Add public empty/error states where relevant
-- [ ] Add visual baseline screenshots if useful
+- [x] Build public site header
+- [x] Build temporary fixture navigation
+- [x] Build profile sidebar
+- [x] Build main content layout
+- [x] Build footer
+- [x] Implement typography
+- [x] Implement Academic Pages-inspired spacing
+- [x] Implement responsive desktop/mobile layout
+- [x] Add skip-to-content
+- [x] Add public empty/error states where relevant (intentional public 404; no data-driven empty states exist yet)
+- [x] Evaluate visual baselines (responsive Playwright viewport assertions used; no screenshot files committed)
+
+Completion checks:
+
+- [x] `npm run lint`
+- [x] `npm run typecheck`
+- [x] `npm run test`
+- [x] `npm run test:e2e`
+- [x] `npm run build`
+- [x] Database migration not applicable because the milestone has no schema changes
 
 ---
 
@@ -423,20 +432,20 @@ Tasks:
 
 # 6. Current Task
 
-**Milestone 0 — Foundation is complete. No implementation task is currently in progress.**
+**Milestone 1 — Public Shell is complete. No implementation task is currently in progress.**
 
-Completed foundation:
+Completed public shell:
 
-1. Next.js 16 App Router, React 19, strict TypeScript, and Tailwind CSS 4 are configured.
-2. shadcn/ui aliases, design tokens, and utility dependencies are configured without adding admin features early.
-3. PostgreSQL access, Drizzle configuration, migration scripts, and a connection-check command are present.
-4. The Drizzle schema entry point is intentionally empty until domain-owning milestones add tables and migrations.
-5. Docker Compose defines the app, PostgreSQL, MinIO S3-compatible storage, and idempotent bucket initialization.
-6. All server environment values are centralized and validated with Zod.
-7. Vitest unit tests cover health and environment validation; Playwright covers application startup and the health endpoint.
-8. README, database documentation, and deployment documentation describe local and container workflows.
+1. A server-rendered public route-group layout owns the public header, profile sidebar, readable content column, and footer.
+2. Temporary navigation, profile, site, and social-link fixtures live behind one typed boundary for later database replacement.
+3. The desktop two-column shell collapses into a stacked mobile layout without horizontal overflow.
+4. Mobile navigation uses a native keyboard-operable disclosure and adds no client-side JavaScript.
+5. The shell includes a skip link, visible focus states, semantic landmarks, reduced-motion handling, and accessible external-link notices.
+6. The homepage uses restrained academic typography, spacing, and text-first sample content rather than dashboard or card-heavy presentation.
+7. A public 404 state reuses the same shell and returns the correct HTTP status.
+8. README and `docs/public-shell.md` document the fixture boundary and responsive architecture.
 
-Next recommended task: **Milestone 1 — Public Shell**. It has not been started.
+Next recommended task: **Milestone 2 — Authentication**. It has not been started.
 
 ---
 
@@ -449,10 +458,8 @@ Next recommended task: **Milestone 1 — Public Shell**. It has not been started
 
 # 8. Open Questions
 
-These do not block Milestone 0 unless discovered to matter during setup.
+These do not block the next milestone unless discovered to matter during implementation.
 
-- Exact public font stack.
-- Exact accent color defaults.
 - Whether dark mode ships in V1 or immediately after V1.
 - Whether Better Auth is selected after confirming current compatibility with the chosen Next.js version.
 - Exact content revision design for V2.
@@ -495,6 +502,16 @@ Future work:
 - Compose `postgres` and `storage` services: RUNNING and HEALTHY
 - `npm audit --omit=dev`: PASS (0 runtime vulnerabilities)
 
+Milestone 1 — 2026-08-08
+
+- `npm run lint`: PASS
+- `npm run typecheck`: PASS
+- `npm run test`: PASS (3 files, 5 tests)
+- `npm run test:e2e`: PASS (3 Chromium tests covering desktop shell, keyboard/mobile behavior, responsive overflow, health, and 404)
+- `npm run build`: PASS (static public homepage and public not-found UI)
+- Database migration: NOT APPLICABLE (no schema changes)
+- In-app browser manual inspection: UNAVAILABLE because no browser backend was exposed in the session; automated Chromium rendering checks passed
+
 ---
 
 # 11. Important Handoff Notes
@@ -506,7 +523,7 @@ Any future coding session should:
 3. Read `ARCHITECTURE.md`.
 4. Read this file.
 5. Inspect the repository before making changes.
-6. Begin Milestone 1 only when it is the requested scope.
+6. Begin Milestone 2 only when it is the requested scope.
 7. Avoid prematurely implementing later milestones.
 8. Update this file before ending meaningful work.
 
@@ -516,4 +533,11 @@ Milestone 0 handoff decisions:
 - Use checked-in Drizzle migrations for schema changes; do not use destructive schema push for deployment.
 - Keep all environment reads behind `src/lib/env/server.ts`, except tooling configuration and conventional `NODE_ENV` checks.
 - Standalone CLI tools must use the framework-neutral `src/db/client.ts` factory instead of importing the Next.js `server-only` database entry point.
-- Do not replace the neutral foundation page with the public shell until Milestone 1 begins.
+
+Milestone 1 handoff decisions:
+
+- Replace `src/features/public-shell/public-shell.fixtures.ts` profile/site values with database data in Milestone 3.
+- Replace fixture navigation with database navigation in Milestone 5; do not scatter fixture imports into public components.
+- Keep the public shell server-rendered. Add a Client Component only when interaction cannot be expressed accessibly with native HTML.
+- Public defaults use a system sans-serif body stack, Georgia headings, and a restrained teal accent through controlled tokens.
+- Preserve the route-group boundary so future admin styling does not leak into public presentation.

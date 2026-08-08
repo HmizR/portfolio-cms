@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.985 0.003 95);
+  --foreground: oklch(0.24 0.018 245);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -20,6 +20,10 @@
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --radius: 0.625rem;
+  --content-width: 72rem;
+  --sidebar-width: 12rem;
+  --font-body: "Aptos", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-heading: Georgia, "Times New Roman", serif;
 }
 
 @theme inline {
@@ -54,5 +58,35 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  min-width: 320px;
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: oklch(0.86 0.055 185);
+  color: oklch(0.2 0.025 245);
+}
+
+:focus-visible {
+  border-radius: 0.125rem;
+  outline: 3px solid oklch(0.52 0.09 185);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
