@@ -20,7 +20,7 @@ export default function Home() {
   return (
     <article>
       <header className="border-b border-slate-200 pb-9 sm:pb-11">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-800">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--public-accent)]">
           Academic portfolio
         </p>
         <h1 className="mt-4 max-w-2xl font-serif text-4xl font-semibold leading-[1.12] tracking-[-0.025em] text-slate-950 sm:text-5xl">
@@ -57,7 +57,7 @@ export default function Home() {
         <ol className="mt-6 divide-y divide-slate-200 border-y border-slate-200">
           {researchDirections.map((direction, index) => (
             <li className="grid gap-2 py-5 sm:grid-cols-[2rem_1fr] sm:gap-3" key={direction.title}>
-              <span aria-hidden="true" className="font-serif text-sm text-teal-800">
+              <span aria-hidden="true" className="font-serif text-sm text-[var(--public-accent)]">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div>

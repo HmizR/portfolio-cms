@@ -1,6 +1,6 @@
 # PortfolioCMS
 
-PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, and secure single-administrator authentication.
+PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, and database-backed profile and site settings.
 
 ## Foundation stack
 
@@ -34,9 +34,9 @@ On PowerShell, use `Copy-Item .env.example .env.local` instead of `cp`. Replace 
 
 PortfolioCMS uses Better Auth with database sessions and HttpOnly cookies. There is no default password and the database enforces one administrator. See `docs/authentication.md` for the setup, session, rate-limit, and recovery model.
 
-## Public shell
+## Profile and appearance
 
-The public homepage currently uses realistic temporary fixtures for the owner profile, social links, and navigation. These fixtures intentionally live behind one typed boundary and will be replaced with database data during the Profile + Settings and Navigation milestones. See `docs/public-shell.md` for the component and responsive-layout decisions.
+After creating the administrator, use `/admin/profile` to manage the public identity, biography, avatar URL, and ordered social links. Use `/admin/appearance` to manage the site title, description, accent preset, content width, profile-image shape, and typography preset. The public shell reads these values from PostgreSQL. Navigation remains a temporary fixture until Milestone 5.
 
 ## Validation
 
@@ -58,5 +58,6 @@ npm run build
 - `docs/deployment.md` documents local and container deployment.
 - `docs/public-shell.md` documents the temporary public shell and fixture boundary.
 - `docs/authentication.md` documents administrator setup and authentication security.
+- `docs/profile-settings.md` documents profile, social-link, site-identity, and appearance settings.
 
 Do not begin a later milestone until the current milestone passes its required checks.

@@ -552,6 +552,8 @@ is_owner
 
 `social_links` remains a child table to avoid a schema migration every time a new social platform appears.
 
+For V1, `profiles` has a database-enforced singleton key and a unique relationship to the single administrator. Social links keep explicit platform, label, URL, icon identifier, visibility, and sort order fields so arbitrary networks remain supported without arbitrary JSON.
+
 ---
 
 # 14. Site Settings
@@ -563,6 +565,8 @@ A key/value table may be used only if each setting is validated through a typed 
 Do not spread arbitrary string keys throughout the codebase.
 
 Prefer a single configuration service that maps storage values into typed settings.
+
+Milestone 3 uses a singleton `site_settings` row with explicit columns and database checks for controlled appearance presets. The supported settings are site title/description, accent color, content width, profile-image shape, and typography. This is deliberately not a theme engine or visual page builder.
 
 ---
 

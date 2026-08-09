@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/features/auth/auth";
@@ -11,6 +12,8 @@ import {
   LOGIN_RATE_LIMIT_WINDOW_MINUTES,
 } from "@/features/auth/rate-limit";
 import { requireAdmin } from "@/features/auth/session";
+import { initializePortfolioForAdmin } from "@/features/profile/service";
+import { PUBLIC_SITE_CACHE_TAG } from "@/features/profile/queries";
 import {
   type AuthFormState,
   loginSchema,
@@ -47,7 +50,7 @@ export async function setupAction(
   }
 
   try {
-    await auth.api.signUpEmail({
+    const registration = await auth.api.signUpEmail({
       headers: await headers(),
       body: {
         name: parsed.data.name,
@@ -55,6 +58,9 @@ export async function setupAction(
         password: parsed.data.password,
       },
     });
+    await initializePortfolioForAdmin(registration.user);
+    updateTag(PUBLIC_SITE_CACHE_TAG);
+    revalidatePath("/", "layout");
   } catch (error) {
     console.error(
       "Admin setup failed.",

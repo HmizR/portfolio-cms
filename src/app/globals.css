@@ -78,6 +78,35 @@ html {
   outline-offset: 3px;
 }
 
+.public-site {
+  --public-accent: oklch(0.42 0.085 185);
+  --public-max-width: 72rem;
+}
+
+.public-site[data-accent="blue"] {
+  --public-accent: oklch(0.45 0.13 250);
+}
+
+.public-site[data-accent="burgundy"] {
+  --public-accent: oklch(0.42 0.12 20);
+}
+
+.public-site[data-accent="violet"] {
+  --public-accent: oklch(0.46 0.12 305);
+}
+
+.public-site[data-content-width="compact"] {
+  --public-max-width: 64rem;
+}
+
+.public-site[data-content-width="wide"] {
+  --public-max-width: 82rem;
+}
+
+.public-site[data-typography="modern"] .font-serif {
+  font-family: var(--font-body);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

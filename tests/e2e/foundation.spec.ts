@@ -10,7 +10,7 @@ test("renders the desktop public shell and health endpoint", async ({ page, requ
   await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
   await expect(page.getByRole("complementary", { name: "Dr. Maya Chen" })).toBeVisible();
   await expect(page.getByRole("contentinfo")).toContainText("Built with PortfolioCMS");
-  await expect(page).toHaveTitle("Dr. Maya Chen | Human-centered AI researcher");
+  await expect(page).toHaveTitle("Maya Chen Research");
 
   const skipLink = page.getByRole("link", { name: "Skip to main content" });
   await skipLink.focus();

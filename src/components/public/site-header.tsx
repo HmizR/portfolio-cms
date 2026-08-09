@@ -14,7 +14,7 @@ function NavigationLinks({ navigation }: Pick<SiteHeaderProps, "navigation">) {
       {navigation.map((item) => (
         <li key={item.label}>
           <Link
-            className="text-sm font-medium text-slate-600 underline-offset-8 transition-colors hover:text-teal-800 hover:underline focus-visible:text-teal-800"
+            className="text-sm font-medium text-slate-600 underline-offset-8 transition-colors hover:text-[var(--public-accent)] hover:underline focus-visible:text-[var(--public-accent)]"
             href={item.href}
           >
             {item.label}
@@ -28,9 +28,9 @@ function NavigationLinks({ navigation }: Pick<SiteHeaderProps, "navigation">) {
 export function SiteHeader({ navigation, siteName }: SiteHeaderProps) {
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200/90 bg-stone-50/95 backdrop-blur-sm">
-      <div className="mx-auto flex min-h-16 w-full max-w-6xl items-center justify-between gap-6 px-5 sm:px-8 lg:px-10">
+      <div className="mx-auto flex min-h-16 w-full max-w-[var(--public-max-width)] items-center justify-between gap-6 px-5 sm:px-8 lg:px-10">
         <Link
-          className="font-serif text-lg font-semibold tracking-tight text-slate-900 underline-offset-8 hover:text-teal-800 focus-visible:text-teal-800"
+          className="font-serif text-lg font-semibold tracking-tight text-slate-900 underline-offset-8 hover:text-[var(--public-accent)] focus-visible:text-[var(--public-accent)]"
           href="/"
         >
           {siteName}
@@ -41,7 +41,7 @@ export function SiteHeader({ navigation, siteName }: SiteHeaderProps) {
         </nav>
 
         <details className="group relative md:hidden">
-          <summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-sm px-2 py-2 text-sm font-semibold text-slate-700 hover:text-teal-800 focus-visible:text-teal-800 [&::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-sm px-2 py-2 text-sm font-semibold text-slate-700 hover:text-[var(--public-accent)] focus-visible:text-[var(--public-accent)] [&::-webkit-details-marker]:hidden">
             Menu
             <ChevronDown
               aria-hidden="true"
@@ -57,7 +57,7 @@ export function SiteHeader({ navigation, siteName }: SiteHeaderProps) {
               {navigation.map((item) => (
                 <li key={item.label}>
                   <Link
-                    className="block rounded-sm px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-stone-100 hover:text-teal-800 focus-visible:bg-stone-100 focus-visible:text-teal-800"
+                    className="block rounded-sm px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-stone-100 hover:text-[var(--public-accent)] focus-visible:bg-stone-100 focus-visible:text-[var(--public-accent)]"
                     href={item.href}
                   >
                     {item.label}

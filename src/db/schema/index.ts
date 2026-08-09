@@ -9,6 +9,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  uuid,
 } from "drizzle-orm/pg-core";
 
 const timestamps = {
@@ -102,6 +103,87 @@ export const rateLimits = pgTable(
     lastRequest: bigint("last_request", { mode: "number" }).notNull(),
   },
   (table) => [uniqueIndex("rate_limits_key_unique").on(table.key)],
+);
+
+export const profiles = pgTable(
+  "profiles",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    singletonKey: integer("singleton_key").default(1).notNull(),
+    fullName: text("full_name").notNull(),
+    headline: text("headline").default("").notNull(),
+    shortBiography: text("short_biography").default("").notNull(),
+    longBiography: text("long_biography").default("").notNull(),
+    location: text("location").default("").notNull(),
+    publicEmail: text("public_email"),
+    avatarUrl: text("avatar_url"),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("profiles_user_id_unique").on(table.userId),
+    uniqueIndex("profiles_singleton_key_unique").on(table.singletonKey),
+    check("profiles_singleton_key_check", sql`${table.singletonKey} = 1`),
+  ],
+);
+
+export const socialLinks = pgTable(
+  "social_links",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    profileId: uuid("profile_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    platform: text("platform").notNull(),
+    label: text("label").notNull(),
+    url: text("url").notNull(),
+    iconIdentifier: text("icon_identifier").default("link").notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    isVisible: boolean("is_visible").default(true).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    index("social_links_profile_id_index").on(table.profileId),
+    uniqueIndex("social_links_profile_url_unique").on(table.profileId, table.url),
+    check("social_links_sort_order_check", sql`${table.sortOrder} >= 0`),
+  ],
+);
+
+export const siteSettings = pgTable(
+  "site_settings",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    singletonKey: integer("singleton_key").default(1).notNull(),
+    siteTitle: text("site_title").notNull(),
+    siteDescription: text("site_description").default("").notNull(),
+    accentColor: text("accent_color").default("teal").notNull(),
+    contentWidth: text("content_width").default("standard").notNull(),
+    profileImageShape: text("profile_image_shape").default("circle").notNull(),
+    typography: text("typography").default("classic").notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("site_settings_singleton_key_unique").on(table.singletonKey),
+    check("site_settings_singleton_key_check", sql`${table.singletonKey} = 1`),
+    check(
+      "site_settings_accent_color_check",
+      sql`${table.accentColor} in ('teal', 'blue', 'burgundy', 'violet')`,
+    ),
+    check(
+      "site_settings_content_width_check",
+      sql`${table.contentWidth} in ('compact', 'standard', 'wide')`,
+    ),
+    check(
+      "site_settings_profile_image_shape_check",
+      sql`${table.profileImageShape} in ('circle', 'rounded', 'square')`,
+    ),
+    check(
+      "site_settings_typography_check",
+      sql`${table.typography} in ('classic', 'modern')`,
+    ),
+  ],
 );
 
 export const authSchema = {

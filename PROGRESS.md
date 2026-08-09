@@ -2,7 +2,7 @@
 
 # PortfolioCMS — Development Progress
 
-Last updated: 2026-08-08
+Last updated: 2026-08-09
 
 This file is the persistent handoff document for ongoing implementation.
 
@@ -16,11 +16,11 @@ Do not use this file as a replacement for requirements or architecture documenta
 
 Current phase:
 
-**Milestone 2 complete / ready for Milestone 3**
+**Milestone 3 complete / ready for Milestone 4**
 
 Overall status:
 
-**The application foundation, responsive public shell, and single-administrator authentication are implemented and validated. Milestone 3 has not started.**
+**The application foundation, responsive public shell, single-administrator authentication, and database-backed profile/site settings are implemented and validated. Milestone 4 has not started.**
 
 ---
 
@@ -181,20 +181,30 @@ Completion checks:
 
 ## Milestone 3 — Profile + Settings
 
-Status: **Not started**
+Status: **Complete**
 
 Tasks:
 
-- [ ] Add profile schema
-- [ ] Add social_links schema
-- [ ] Add site settings model
-- [ ] Add migrations
-- [ ] Build profile admin form
-- [ ] Build social link management
-- [ ] Build site title/description settings
-- [ ] Build basic appearance settings
-- [ ] Replace fixture public profile with database data
-- [ ] Replace fixture site title with database data
+- [x] Add profile schema
+- [x] Add social_links schema
+- [x] Add site settings model
+- [x] Add migrations
+- [x] Build profile admin form
+- [x] Build social link management
+- [x] Build site title/description settings
+- [x] Build basic appearance settings
+- [x] Replace fixture public profile with database data
+- [x] Replace fixture site title with database data
+
+Completion checks:
+
+- [x] `npm run lint`
+- [x] `npm run typecheck`
+- [x] `npm run test`
+- [x] `npm run test:e2e`
+- [x] `npm run build`
+- [x] Profile/settings migration generated, inspected, and applied to development, isolated test, and Compose databases
+- [x] Profile/settings, public-shell, database, architecture, README, and progress documentation updated
 
 ---
 
@@ -444,20 +454,21 @@ Tasks:
 
 # 6. Current Task
 
-**Milestone 2 — Authentication is complete. No implementation task is currently in progress.**
+**Milestone 3 — Profile + Settings is complete. No implementation task is currently in progress.**
 
-Completed authentication:
+Completed profile and settings work:
 
-1. Better Auth owns email/password hashing and opaque PostgreSQL sessions through its Drizzle adapter.
-2. `/setup` creates the first administrator, is unavailable afterward, and cannot create a second user because the database enforces a singleton invariant.
-3. `/login` and `/setup` are explicitly dynamic so database and session state are evaluated on every request.
-4. `/admin/**` is protected by the server-side layout guard; logout independently invokes the same authorization guard.
-5. Login attempts are limited to five per 15-minute window in PostgreSQL, using an HMAC identifier instead of storing the administrator email in limiter records.
-6. The responsive admin shell provides an overview route, public-site link, administrator identity, and logout control without adding future content features.
-7. Playwright uses a guarded isolated `_test` database, applies checked-in migrations, and covers setup, HttpOnly cookie behavior, route protection, login, logout, and rate limiting.
-8. README, architecture, database, deployment, and authentication documentation describe the implemented behavior.
+1. Singleton `profiles` and `site_settings` records are database-constrained and linked to the single administrator; `social_links` is a flexible ordered child table.
+2. First-time setup initializes profile/site data, while migration `0001_public_chameleon.sql` backfills installations with an existing administrator.
+3. `/admin/profile` manages public identity, biographies, location, public email, a validated interim avatar URL, and visible ordered social links.
+4. `/admin/appearance` manages title, description, and controlled accent, width, image-shape, and typography presets without arbitrary CSS.
+5. Both server actions independently authenticate and validate input, and profile/social replacement is transactional.
+6. The public shell reads site/profile/social data from PostgreSQL; only navigation remains a temporary fixture until Milestone 5.
+7. Public database reads are deferred to request time for database-independent image builds, cached by tag, and invalidated after setup or settings mutations.
+8. Unit tests cover validation and unsafe URLs; Playwright covers setup through profile/appearance updates and verifies the rendered public result.
+9. Appearance forms retain the server-validated saved values after Server Action reset and after reload; the regression is covered in Playwright.
 
-Next recommended task: **Milestone 3 — Profile + Settings**. It has not been started.
+Next recommended task: **Milestone 4 — Pages**. It has not been started.
 
 ---
 
@@ -540,6 +551,31 @@ Milestone 2 — 2026-08-08
 - In-app browser manual inspection: UNAVAILABLE because no browser tab was exposed; automated Chromium rendering and interaction checks passed
 - `npm audit --omit=dev`: 5 moderate tooling-only esbuild advisories through Drizzle Kit; no production application code path is affected
 
+Milestone 3 — 2026-08-09
+
+- `npm run lint`: PASS
+- `npm run typecheck`: PASS
+- `npm run test`: PASS (6 files, 11 tests, including profile/appearance validation and unsafe URL rejection)
+- `npm run test:e2e`: PASS (4 Chromium tests; profile/social and appearance updates are verified on the public site)
+- `npm run build`: PASS (public routes intentionally render on demand; database reads are cached and deferred until runtime)
+- `npm run db:generate`: PASS (`drizzle/0001_public_chameleon.sql`; final schema check reports no further changes)
+- `npm run db:migrate`: PASS against the development PostgreSQL service
+- Isolated Playwright database migration: PASS
+- `npm run db:check`: PASS against the healthy Compose PostgreSQL service
+- `docker compose config --quiet`: PASS
+- `docker compose build app migrate`: PASS after verifying image compilation does not require a live database
+- `docker compose run --rm migrate`: PASS against the healthy Compose PostgreSQL service
+- In-app browser manual inspection: UNAVAILABLE because the browser connection timed out twice; automated Chromium rendering and interaction checks passed
+
+Milestone 3 appearance-state follow-up — 2026-08-09
+
+- Fixed appearance fields reverting visually to their pre-submit defaults after a successful Server Action.
+- `npm run lint`: PASS
+- `npm run typecheck`: PASS
+- `npm run test`: PASS (6 files, 11 tests)
+- Focused Playwright profile/appearance flow: PASS, including immediate post-save and full-reload value assertions
+- `npm run build`: PASS
+
 ---
 
 # 11. Important Handoff Notes
@@ -551,7 +587,7 @@ Any future coding session should:
 3. Read `ARCHITECTURE.md`.
 4. Read this file.
 5. Inspect the repository before making changes.
-6. Begin Milestone 3 only when it is the requested scope.
+6. Begin Milestone 4 only when it is the requested scope.
 7. Avoid prematurely implementing later milestones.
 8. Update this file before ending meaningful work.
 
@@ -564,7 +600,7 @@ Milestone 0 handoff decisions:
 
 Milestone 1 handoff decisions:
 
-- Replace `src/features/public-shell/public-shell.fixtures.ts` profile/site values with database data in Milestone 3.
+- Profile and site fixture replacement was completed in Milestone 3; only navigation remains in `src/features/public-shell/public-shell.fixtures.ts`.
 - Replace fixture navigation with database navigation in Milestone 5; do not scatter fixture imports into public components.
 - Keep the public shell server-rendered. Add a Client Component only when interaction cannot be expressed accessibly with native HTML.
 - Public defaults use a system sans-serif body stack, Georgia headings, and a restrained teal accent through controlled tokens.
@@ -577,5 +613,14 @@ Milestone 2 handoff decisions:
 - Protect every future admin mutation with `requireAdmin()` even when its page already lives under the protected layout.
 - Do not remove the `users.singleton_key` constraint; it is the race-safe single-administrator enforcement boundary.
 - Use `TEST_DATABASE_URL` only for a database ending in `_test`; the E2E bootstrap intentionally truncates authentication tables there.
-- Profile and settings persistence remains Milestone 3 scope; do not add it to the authentication tables.
+- Profile and settings persistence is kept in its own Milestone 3 tables; authentication setup only initializes those records after creating the administrator.
 - Drizzle commands load the standard Next.js environment files through `drizzle.config.ts`; developers do not need to export `DATABASE_URL` separately when `.env.local` is configured.
+
+Milestone 3 handoff decisions:
+
+- Keep `profiles` and `site_settings` singletons while V1 remains single-administrator.
+- Keep social networks flexible; do not replace `social_links` with fixed platform columns or a platform enum.
+- Keep public profile/site reads behind `getPublicSiteData()` so request-time deferral, cache tagging, and invalidation remain centralized.
+- Navigation remains the only public-shell fixture and is owned by Milestone 5.
+- The avatar URL is an intentional bridge to Milestone 8; future uploads must replace it through the storage abstraction rather than adding storage code to the profile feature.
+- Appearance values remain controlled tokens. Dark mode is still an open product decision, not an unfinished Milestone 3 requirement.
