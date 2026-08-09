@@ -16,11 +16,11 @@ Do not use this file as a replacement for requirements or architecture documenta
 
 Current phase:
 
-**Milestone 3 complete / ready for Milestone 4**
+**Milestone 4 complete / ready for Milestone 5**
 
 Overall status:
 
-**The application foundation, responsive public shell, single-administrator authentication, and database-backed profile/site settings are implemented and validated. Milestone 4 has not started.**
+**The application foundation, responsive public shell, authentication, profile/settings, and complete custom-page publishing workflow are implemented and validated. Milestone 5 has not started.**
 
 ---
 
@@ -210,31 +210,41 @@ Completion checks:
 
 ## Milestone 4 — Pages
 
-Status: **Not started**
+Status: **Complete**
 
 Tasks:
 
-- [ ] Add pages schema
-- [ ] Add migration
-- [ ] Add page validation
-- [ ] Implement page CRUD
-- [ ] Implement slug generation
-- [ ] Implement reserved slug validation
-- [ ] Implement slug uniqueness
-- [ ] Create shared Markdown renderer
-- [ ] Add GFM
-- [ ] Add code highlighting
-- [ ] Add KaTeX
-- [ ] Add Mermaid
-- [ ] Add safe Markdown sanitization
-- [ ] Build CodeMirror editor
-- [ ] Build preview mode
-- [ ] Build split mode
-- [ ] Implement autosave
-- [ ] Implement draft/published/archived status
-- [ ] Implement public `/[slug]`
-- [ ] Implement secure draft preview
-- [ ] Add page tests
+- [x] Add pages schema
+- [x] Add migrations
+- [x] Add page validation
+- [x] Implement page CRUD
+- [x] Implement slug generation
+- [x] Implement reserved slug validation
+- [x] Implement slug uniqueness
+- [x] Create shared Markdown renderer
+- [x] Add GFM
+- [x] Add code highlighting
+- [x] Add KaTeX
+- [x] Add Mermaid
+- [x] Add safe Markdown sanitization
+- [x] Build CodeMirror editor
+- [x] Build preview mode
+- [x] Build split mode
+- [x] Implement autosave with private draft isolation
+- [x] Implement draft/published/archived status
+- [x] Implement public `/[slug]`
+- [x] Implement secure draft preview
+- [x] Add page tests
+
+Completion checks:
+
+- [x] `npm run lint`
+- [x] `npm run typecheck`
+- [x] `npm run test`
+- [x] `npm run test:e2e`
+- [x] `npm run build`
+- [x] Page migrations generated, inspected, and applied to development, isolated test, and Compose databases
+- [x] Page, Markdown, database, architecture, README, and progress documentation updated
 
 ---
 
@@ -454,21 +464,21 @@ Tasks:
 
 # 6. Current Task
 
-**Milestone 3 — Profile + Settings is complete. No implementation task is currently in progress.**
+**Milestone 4 — Pages is complete. No implementation task is currently in progress.**
 
-Completed profile and settings work:
+Completed page work:
 
-1. Singleton `profiles` and `site_settings` records are database-constrained and linked to the single administrator; `social_links` is a flexible ordered child table.
-2. First-time setup initializes profile/site data, while migration `0001_public_chameleon.sql` backfills installations with an existing administrator.
-3. `/admin/profile` manages public identity, biographies, location, public email, a validated interim avatar URL, and visible ordered social links.
-4. `/admin/appearance` manages title, description, and controlled accent, width, image-shape, and typography presets without arbitrary CSS.
-5. Both server actions independently authenticate and validate input, and profile/social replacement is transactional.
-6. The public shell reads site/profile/social data from PostgreSQL; only navigation remains a temporary fixture until Milestone 5.
-7. Public database reads are deferred to request time for database-independent image builds, cached by tag, and invalidated after setup or settings mutations.
-8. Unit tests cover validation and unsafe URLs; Playwright covers setup through profile/appearance updates and verifies the rendered public result.
-9. Appearance forms retain the server-validated saved values after Server Action reset and after reload; the regression is covered in Playwright.
+1. `pages` stores unique stable slugs, lifecycle state, publish time, display settings, page metadata, canonical Markdown, and a separate private autosave buffer.
+2. `/admin/pages` provides create, list, edit, delete, publish, move-to-draft, and archive workflows; every mutation independently authenticates and validates external input.
+3. CodeMirror 6 provides Markdown, preview, split, toolbar, expanded editing, and an autosave indicator. Autosave never changes canonical published content.
+4. One sanitized Markdown pipeline provides GFM, footnotes, heading anchors, server-side Shiki highlighting, KaTeX, and strict Mermaid rendering.
+5. Published pages render through the restrained public shell at `/[slug]`; drafts and archived pages return 404.
+6. Protected previews use the real public presentation, show current autosaved drafts, require an administrator session, and opt out of indexing.
+7. Explicit page mutations invalidate the shared public-page cache and affected old/new slug routes.
+8. Unit tests cover slug/validation/Markdown behavior and unsafe content. Playwright covers create, autosave, protected preview, publish, private published-page autosave, archive, and delete.
+9. Navigation remains a fixture until Milestone 5; editor uploads and the media picker remain Milestone 8 work.
 
-Next recommended task: **Milestone 4 — Pages**. It has not been started.
+Next recommended task: **Milestone 5 — Navigation**. It has not been started.
 
 ---
 
@@ -576,6 +586,24 @@ Milestone 3 appearance-state follow-up — 2026-08-09
 - Focused Playwright profile/appearance flow: PASS, including immediate post-save and full-reload value assertions
 - `npm run build`: PASS
 
+Milestone 4 — 2026-08-09
+
+- `npm run lint`: PASS
+- `npm run typecheck`: PASS
+- `npm run test`: PASS (9 files, 17 tests; page coverage includes slugs, validation, GFM, anchors, Shiki, KaTeX, Mermaid, raw-HTML removal, and unsafe URL removal)
+- `npm run test:e2e`: PASS (5 Chromium tests; the serial publishing flow covers create, CodeMirror editing, autosave, secure preview, publish, private autosave isolation, archive, and delete)
+- `npm run build`: PASS (all page and preview routes are dynamic and the build does not require a live database)
+- `npm run db:generate`: PASS (`drizzle/0002_boring_madame_web.sql` and `drizzle/0003_brown_wiccan.sql`; final schema check reports no further changes)
+- `npm run db:migrate`: PASS against the development PostgreSQL service
+- Isolated Playwright database creation and migration: PASS
+- `npm run db:check`: PASS against the healthy Compose PostgreSQL service
+- `docker compose config --quiet`: PASS
+- `docker compose build app migrate`: PASS (Node 22 standalone application and migration images)
+- `docker compose run --rm migrate`: PASS against the healthy Compose PostgreSQL service
+- Compose `postgres` and `storage` services: RUNNING and HEALTHY
+- In-app browser manual inspection: UNAVAILABLE because browser discovery and its recovery guidance both timed out; the complete standalone Playwright rendering and interaction suite passed
+- `npm audit --omit=dev`: 5 moderate tooling-only esbuild advisories through Drizzle Kit; npm still offers only a breaking Drizzle Kit downgrade as an automated fix
+
 ---
 
 # 11. Important Handoff Notes
@@ -624,3 +652,13 @@ Milestone 3 handoff decisions:
 - Navigation remains the only public-shell fixture and is owned by Milestone 5.
 - The avatar URL is an intentional bridge to Milestone 8; future uploads must replace it through the storage abstraction rather than adding storage code to the profile feature.
 - Appearance values remain controlled tokens. Dark mode is still an open product decision, not an unfinished Milestone 3 requirement.
+
+Milestone 4 handoff decisions:
+
+- Keep `content_markdown` canonical and `draft_markdown` private. Autosave must never write public content directly; explicit save/lifecycle actions promote the editor value and clear the draft.
+- Keep all later Markdown consumers on `src/lib/markdown/render.ts`. Do not add separate public, admin-preview, or content-type renderers.
+- Normalize timestamp values after the Next.js public-page cache boundary because cached values are serialized before being returned to application code.
+- Keep raw HTML disabled and Mermaid in strict mode. Shiki remains server-side; only diagram rendering is dynamically loaded in the browser when required.
+- Keep page navigation on the fixture until Milestone 5. Do not attach pages to the navbar before navigation ordering, visibility, and destination integrity are implemented.
+- Keep URL-based image insertion as the Milestone 4 boundary. Uploads, drag/drop, clipboard images, and the media picker belong to Milestone 8 and must use the storage abstraction.
+- The external page Open Graph image URL is an interim bridge. Replace it with a media relationship in Milestone 8 without duplicating the later shared SEO architecture from Milestone 11.

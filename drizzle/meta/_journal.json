@@ -15,6 +15,20 @@
       "when": 1786232574966,
       "tag": "0001_public_chameleon",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786262275473,
+      "tag": "0002_boring_madame_web",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786262884682,
+      "tag": "0003_brown_wiccan",
+      "breakpoints": true
     }
   ]
 }

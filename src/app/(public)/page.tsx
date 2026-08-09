@@ -1,3 +1,7 @@
+import { PublicShell } from "@/components/public/public-shell";
+import { getPublicSiteData } from "@/features/profile/queries";
+import { publicNavigationFixture } from "@/features/public-shell/public-shell.fixtures";
+
 const researchDirections = [
   {
     title: "Human oversight in AI-assisted decisions",
@@ -16,9 +20,11 @@ const researchDirections = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const site = await getPublicSiteData();
   return (
-    <article>
+    <PublicShell navigation={publicNavigationFixture} site={site}>
+      <article>
       <header className="border-b border-slate-200 pb-9 sm:pb-11">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--public-accent)]">
           Academic portfolio
@@ -89,6 +95,7 @@ export default function Home() {
           invited talks, or student supervision, please get in touch by email.
         </p>
       </section>
-    </article>
+      </article>
+    </PublicShell>
   );
 }

@@ -9,10 +9,11 @@ import type { NavigationItemFixture } from "@/features/public-shell/public-shell
 interface PublicShellProps {
   children: ReactNode;
   navigation: NavigationItemFixture[];
+  showSidebar?: boolean;
   site: PublicSiteData;
 }
 
-export function PublicShell({ children, navigation, site }: PublicShellProps) {
+export function PublicShell({ children, navigation, showSidebar = true, site }: PublicShellProps) {
   return (
     <div className="public-site flex min-h-screen flex-col" data-accent={site.appearance.accentColor} data-content-width={site.appearance.contentWidth} data-typography={site.appearance.typography}>
       <a
@@ -24,8 +25,8 @@ export function PublicShell({ children, navigation, site }: PublicShellProps) {
 
       <SiteHeader navigation={navigation} siteName={site.appearance.siteTitle} />
 
-      <div className="mx-auto grid w-full max-w-[var(--public-max-width)] flex-1 gap-10 px-5 py-10 sm:px-8 sm:py-14 md:grid-cols-[11rem_minmax(0,1fr)] md:gap-12 lg:grid-cols-[12rem_minmax(0,42rem)] lg:justify-between lg:gap-20 lg:px-10 lg:py-16">
-        <ProfileSidebar imageShape={site.appearance.profileImageShape} owner={site.owner} socialLinks={site.socialLinks} />
+      <div className={showSidebar ? "mx-auto grid w-full max-w-[var(--public-max-width)] flex-1 gap-10 px-5 py-10 sm:px-8 sm:py-14 md:grid-cols-[11rem_minmax(0,1fr)] md:gap-12 lg:grid-cols-[12rem_minmax(0,42rem)] lg:justify-between lg:gap-20 lg:px-10 lg:py-16" : "mx-auto w-full max-w-3xl flex-1 px-5 py-10 sm:px-8 sm:py-14 lg:px-10 lg:py-16"}>
+        {showSidebar ? <ProfileSidebar imageShape={site.appearance.profileImageShape} owner={site.owner} socialLinks={site.socialLinks} /> : null}
         <main id="main-content" className="min-w-0 scroll-mt-24" tabIndex={-1}>
           {children}
         </main>

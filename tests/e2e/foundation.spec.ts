@@ -53,3 +53,8 @@ test("renders an intentional public not-found state", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Return to the homepage" })).toBeVisible();
 });
+
+test("protects private page previews from anonymous visitors", async ({ page }) => {
+  await page.goto("/preview/pages/7fe4e8dd-8f22-4b9f-b19a-7cd4529f8d70");
+  await expect(page).toHaveURL(/\/login$/);
+});

@@ -1,0 +1,1 @@
+ALTER TABLE "pages" ADD COLUMN "draft_markdown" text;

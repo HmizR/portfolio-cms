@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe.configure({ mode: "serial" });
 
 test("completes setup, protects admin routes, and supports login and logout", async ({ page }) => {
+  test.setTimeout(180_000);
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/setup$/);
   await expect(page.getByRole("heading", { name: "Create your administrator" })).toBeVisible();
@@ -56,6 +57,65 @@ test("completes setup, protects admin routes, and supports login and logout", as
   await expect(page.getByRole("link", { name: /GitHub/ })).toHaveAttribute("href", "https://github.com/maya-chen");
   await expect(page).toHaveTitle("Maya Chen Research");
   await expect(page.locator(".public-site")).toHaveAttribute("data-accent", "blue");
+
+  await page.goto("/admin/pages");
+  await expect(page.getByRole("heading", { name: "No pages yet" })).toBeVisible();
+  await page.getByRole("link", { name: "New page" }).click();
+  await page.getByLabel("Title").fill("Hello");
+  await page.getByRole("button", { name: "Create draft" }).click();
+  await expect(page).toHaveURL(/\/admin\/pages\/[0-9a-f-]+$/);
+  const editPageUrl = page.url();
+  const previewHref = await page.getByRole("link", { name: /Preview public layout/ }).getAttribute("href");
+  expect(previewHref).toMatch(/^\/preview\/pages\/[0-9a-f-]+$/);
+  if (!previewHref) throw new Error("Page preview link is missing.");
+
+  await page.goto("/admin/pages/new");
+  await page.getByLabel("Title").fill("Another page");
+  await page.getByLabel("Slug").fill("hello");
+  await page.getByRole("button", { name: "Create draft" }).click();
+  await expect(page.getByText("A page already uses this slug.")).toBeVisible();
+  await page.goto(editPageUrl);
+
+  await page.getByLabel("Excerpt").fill("A Markdown rendering demonstration.");
+  await page.locator(".cm-content").fill("# Hello from Markdown\n\n**Published content** with a footnote.[^1]\n\n| Feature | Status |\n| --- | --- |\n| Markdown | Working |\n\n```ts\nconst milestone = 4\n```\n\n$E = mc^2$\n\n[^1]: Draft preview note.");
+  await expect(page.getByText(/^Saved \d/)).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: /Preview/ }).click();
+  await expect(page.getByRole("heading", { name: "Hello from Markdown" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("cell", { name: "Working" })).toBeVisible();
+
+  const draftResponse = await page.request.get("/hello");
+  expect(draftResponse.status()).toBe(404);
+  await page.goto(previewHref);
+  await expect(page.getByText(/Private preview \u00b7 draft/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Hello from Markdown" })).toBeVisible();
+
+  await page.goto(editPageUrl);
+  await page.getByRole("button", { name: "Publish" }).click();
+  await expect(page.getByText("Page published.")).toBeVisible();
+  await page.goto("/hello");
+  await expect(page.getByRole("heading", { name: "Hello", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Hello from Markdown" })).toBeVisible();
+  await expect(page.getByText("Published content")).toBeVisible();
+
+  await page.goto(editPageUrl);
+  await page.locator(".cm-content").fill("# Private autosave\n\nThis change is not public until explicitly saved.");
+  await expect(page.getByText(/^Saved \d/)).toBeVisible({ timeout: 30_000 });
+  await page.goto("/hello");
+  await expect(page.getByText("Published content")).toBeVisible();
+  await expect(page.getByText("This change is not public until explicitly saved.")).toHaveCount(0);
+  await page.goto(previewHref);
+  await expect(page.getByRole("heading", { name: "Private autosave" })).toBeVisible();
+
+  await page.goto(editPageUrl);
+  await page.getByRole("button", { name: "Archive" }).click();
+  await expect(page.getByText("Page archived.")).toBeVisible();
+  const archivedResponse = await page.request.get("/hello");
+  expect(archivedResponse.status()).toBe(404);
+
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Delete page" }).click();
+  await expect(page).toHaveURL(/\/admin\/pages$/);
+  await expect(page.getByRole("heading", { name: "No pages yet" })).toBeVisible();
 
   await page.goto("/setup");
   await expect(page).toHaveURL(/\/admin$/);

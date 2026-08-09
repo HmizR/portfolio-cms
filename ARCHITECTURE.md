@@ -431,6 +431,7 @@ title
 slug
 excerpt
 content_markdown
+draft_markdown
 status
 published_at
 show_title
@@ -442,6 +443,8 @@ og_image_id
 created_at
 updated_at
 ```
+
+Milestone 4 implements this as one `pages` table. `content_markdown` is the canonical, explicitly saved document; nullable `draft_markdown` is an autosave buffer used only by authenticated editing and preview. Explicit save and lifecycle actions promote the buffer to canonical content. Until the media abstraction arrives in Milestone 8, the page-level Open Graph image uses a validated external URL bridge rather than a media relationship.
 
 ## Posts
 
@@ -724,7 +727,7 @@ remark-rehype
 Safe rendered content
 ```
 
-The exact plugin order must be tested.
+Milestone 4 implements the shared pipeline in `src/lib/markdown/render.ts`. Sanitization runs after Markdown is converted to HAST and before trusted KaTeX, Mermaid, and Shiki transformations add controlled output. Raw HTML is not passed through. The exact plugin order is covered by renderer tests.
 
 ---
 
@@ -751,6 +754,8 @@ Mermaid content must not execute arbitrary JavaScript.
 Render diagrams through a controlled component.
 
 Avoid unsafe Mermaid configuration.
+
+Mermaid fences are marked on the server and rendered by a small client boundary only when diagrams exist. Mermaid uses strict security settings; the public bundle does not include a client-side syntax highlighter.
 
 ---
 
@@ -942,6 +947,8 @@ Update project
 ```
 
 Do not globally disable caching to avoid understanding invalidation.
+
+Published page lookups use a shared cache tag. Explicit page mutations invalidate that tag and both the previous and current slug paths. Autosave does not invalidate public content because it writes only the private draft buffer.
 
 ---
 

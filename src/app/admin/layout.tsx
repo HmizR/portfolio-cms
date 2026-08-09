@@ -1,4 +1,4 @@
-import { ExternalLink, LayoutDashboard, Palette, UserRound } from "lucide-react";
+import { ExternalLink, FileText, LayoutDashboard, Palette, UserRound } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -22,6 +22,8 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
           <Link className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold hover:bg-slate-800" href="/admin">
             <LayoutDashboard aria-hidden="true" className="size-4" /> Overview
           </Link>
+          <p className="px-3 pb-1 pt-5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Content</p>
+          <Link className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold hover:bg-slate-800" href="/admin/pages"><FileText aria-hidden="true" className="size-4" /> Pages</Link>
           <p className="px-3 pb-1 pt-5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Website</p>
           <Link className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold hover:bg-slate-800" href="/admin/profile"><UserRound aria-hidden="true" className="size-4" /> Profile</Link>
           <Link className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold hover:bg-slate-800" href="/admin/appearance"><Palette aria-hidden="true" className="size-4" /> Appearance</Link>

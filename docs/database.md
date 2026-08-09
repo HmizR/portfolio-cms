@@ -2,9 +2,11 @@
 
 PortfolioCMS uses PostgreSQL through Drizzle ORM and the `pg` driver.
 
-The schema entry point is `src/db/schema/index.ts`. Milestone 2 owns the `users`, `accounts`, `sessions`, `verifications`, and `rate_limits` tables. Milestone 3 adds `profiles`, `social_links`, and `site_settings`. Later domain tables are introduced only by their owning milestones. Production deployment must use `npm run db:migrate`; destructive schema push is not a deployment workflow.
+The schema entry point is `src/db/schema/index.ts`. Milestone 2 owns the authentication tables, Milestone 3 adds profile and site settings, and Milestone 4 adds `pages`. Later domain tables are introduced only by their owning milestones. Production deployment must use `npm run db:migrate`; destructive schema push is not a deployment workflow.
 
 `profiles` and `site_settings` use database-enforced singleton keys because PortfolioCMS V1 has one owner. A profile belongs to the administrator, and social links belong to the profile with cascade deletion, non-negative ordering, and unique URLs per profile. Appearance values are constrained to the supported application presets. Migration `0001_public_chameleon.sql` also initializes profile and site rows for an administrator created before Milestone 3.
+
+The `pages` table has a database-unique slug and a checked draft/published/archived status. Timezone-aware `published_at` records the first publication time. `content_markdown` is canonical explicitly saved content; nullable `draft_markdown` isolates editor autosaves so they cannot silently alter an already-published page. Migrations `0002_boring_madame_web.sql` and `0003_brown_wiccan.sql` introduce the table and that draft boundary.
 
 ## Commands
 

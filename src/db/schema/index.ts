@@ -186,6 +186,32 @@ export const siteSettings = pgTable(
   ],
 );
 
+export const pages = pgTable(
+  "pages",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: text("title").notNull(),
+    slug: text("slug").notNull(),
+    excerpt: text("excerpt").default("").notNull(),
+    contentMarkdown: text("content_markdown").default("").notNull(),
+    draftMarkdown: text("draft_markdown"),
+    status: text("status").default("draft").notNull(),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    showTitle: boolean("show_title").default(true).notNull(),
+    showSidebar: boolean("show_sidebar").default(true).notNull(),
+    seoTitle: text("seo_title"),
+    seoDescription: text("seo_description"),
+    canonicalUrl: text("canonical_url"),
+    ogImageUrl: text("og_image_url"),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("pages_slug_unique").on(table.slug),
+    index("pages_status_published_at_index").on(table.status, table.publishedAt),
+    check("pages_status_check", sql`${table.status} in ('draft', 'published', 'archived')`),
+  ],
+);
+
 export const authSchema = {
   user: users,
   session: sessions,
