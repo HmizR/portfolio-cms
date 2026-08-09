@@ -3,12 +3,12 @@ import type { ReactNode } from "react";
 import { ProfileSidebar } from "@/components/public/profile-sidebar";
 import { SiteFooter } from "@/components/public/site-footer";
 import { SiteHeader } from "@/components/public/site-header";
+import type { PublicNavigationItem } from "@/features/navigation/destination";
 import type { PublicSiteData } from "@/features/profile/queries";
-import type { NavigationItemFixture } from "@/features/public-shell/public-shell.fixtures";
 
 interface PublicShellProps {
   children: ReactNode;
-  navigation: NavigationItemFixture[];
+  navigation: PublicNavigationItem[];
   showSidebar?: boolean;
   site: PublicSiteData;
 }

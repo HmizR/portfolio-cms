@@ -59,7 +59,7 @@ export async function prepareTestDatabase(): Promise<string> {
   try {
     await migrate(database, { migrationsFolder: "drizzle" });
     await pool.query(
-      "truncate table pages, site_settings, social_links, profiles, rate_limits, verifications, sessions, accounts, users restart identity cascade",
+      "truncate table navigation_items, pages, site_settings, social_links, profiles, rate_limits, verifications, sessions, accounts, users restart identity cascade",
     );
   } finally {
     await pool.end();

@@ -4,6 +4,7 @@ import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/features/auth/session";
+import { PUBLIC_NAVIGATION_CACHE_TAG } from "@/features/navigation/queries";
 import { PUBLIC_PAGES_CACHE_TAG } from "@/features/pages/queries";
 import {
   autosavePage,
@@ -43,7 +44,10 @@ function valuesFromPageForm(formData: FormData) {
 
 function revalidatePageRoutes(slugs: string[]): void {
   updateTag(PUBLIC_PAGES_CACHE_TAG);
+  updateTag(PUBLIC_NAVIGATION_CACHE_TAG);
   for (const slug of new Set(slugs)) revalidatePath(`/${slug}`);
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/navigation");
   revalidatePath("/admin/pages");
 }
 

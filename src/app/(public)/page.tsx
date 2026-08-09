@@ -1,6 +1,6 @@
 import { PublicShell } from "@/components/public/public-shell";
+import { getPublicNavigation } from "@/features/navigation/queries";
 import { getPublicSiteData } from "@/features/profile/queries";
-import { publicNavigationFixture } from "@/features/public-shell/public-shell.fixtures";
 
 const researchDirections = [
   {
@@ -21,9 +21,9 @@ const researchDirections = [
 ];
 
 export default async function Home() {
-  const site = await getPublicSiteData();
+  const [navigation, site] = await Promise.all([getPublicNavigation(), getPublicSiteData()]);
   return (
-    <PublicShell navigation={publicNavigationFixture} site={site}>
+    <PublicShell navigation={navigation} site={site}>
       <article>
       <header className="border-b border-slate-200 pb-9 sm:pb-11">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--public-accent)]">

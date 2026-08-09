@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { PublicShell } from "@/components/public/public-shell";
+import { getPublicNavigation } from "@/features/navigation/queries";
 import { PagePresentation } from "@/features/pages/page-presentation";
 import { getPublishedPageBySlug } from "@/features/pages/queries";
 import { pageSlugSchema } from "@/features/pages/validation";
 import { getPublicSiteData } from "@/features/profile/queries";
-import { publicNavigationFixture } from "@/features/public-shell/public-shell.fixtures";
 import { renderMarkdown } from "@/lib/markdown/render";
 
 interface PublicPageProps {
@@ -31,11 +31,12 @@ export default async function PublicPage({ params }: PublicPageProps) {
   const { slug } = await params;
   const parsed = pageSlugSchema.safeParse(slug);
   if (!parsed.success) notFound();
-  const [page, site] = await Promise.all([
+  const [navigation, page, site] = await Promise.all([
+    getPublicNavigation(),
     getPublishedPageBySlug(parsed.data),
     getPublicSiteData(),
   ]);
   if (!page) notFound();
   const html = await renderMarkdown(page.contentMarkdown);
-  return <PublicShell navigation={publicNavigationFixture} showSidebar={page.showSidebar} site={site}><PagePresentation excerpt={page.excerpt} html={html} publishedAt={page.publishedAt} showTitle={page.showTitle} title={page.title} /></PublicShell>;
+  return <PublicShell navigation={navigation} showSidebar={page.showSidebar} site={site}><PagePresentation excerpt={page.excerpt} html={html} publishedAt={page.publishedAt} showTitle={page.showTitle} title={page.title} /></PublicShell>;
 }

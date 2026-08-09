@@ -28,4 +28,4 @@ The CodeMirror 6 editor provides Markdown, preview, and split modes, an expanded
 
 Page-specific title, description, canonical URL, and Open Graph image URL overrides are available. The external Open Graph URL is an interim bridge until media storage exists; shared cross-content SEO helpers remain Milestone 11 work.
 
-Navigation still uses the temporary public fixture. Adding pages to the public navbar is Milestone 5.
+Published pages can be attached to the public navbar through `/admin/navigation`. Page navigation stores the page ID rather than its mutable slug and is automatically hidden when the page becomes draft or archived.

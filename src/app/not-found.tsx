@@ -1,13 +1,13 @@
 import Link from "next/link";
 
 import { PublicShell } from "@/components/public/public-shell";
+import { getPublicNavigation } from "@/features/navigation/queries";
 import { getPublicSiteData } from "@/features/profile/queries";
-import { publicNavigationFixture } from "@/features/public-shell/public-shell.fixtures";
 
 export default async function NotFound() {
-  const site = await getPublicSiteData();
+  const [navigation, site] = await Promise.all([getPublicNavigation(), getPublicSiteData()]);
   return (
-    <PublicShell navigation={publicNavigationFixture} site={site}>
+    <PublicShell navigation={navigation} site={site}>
       <div className="border-b border-slate-200 pb-10">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--public-accent)]">404</p>
         <h1 className="mt-4 font-serif text-4xl font-semibold tracking-tight text-slate-950">

@@ -1,6 +1,6 @@
 # PortfolioCMS
 
-PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, database-backed profile/settings, and custom Markdown pages.
+PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, database-backed profile/settings, custom Markdown pages, and dynamic navigation.
 
 ## Foundation stack
 
@@ -36,11 +36,15 @@ PortfolioCMS uses Better Auth with database sessions and HttpOnly cookies. There
 
 ## Profile and appearance
 
-After creating the administrator, use `/admin/profile` to manage the public identity, biography, avatar URL, and ordered social links. Use `/admin/appearance` to manage the site title, description, accent preset, content width, profile-image shape, and typography preset. The public shell reads these values from PostgreSQL. Navigation remains a temporary fixture until Milestone 5.
+After creating the administrator, use `/admin/profile` to manage the public identity, biography, avatar URL, and ordered social links. Use `/admin/appearance` to manage the site title, description, accent preset, content width, profile-image shape, and typography preset. The public shell reads these values from PostgreSQL.
 
 ## Pages
 
 Use `/admin/pages` to create, edit, preview, publish, archive, and delete custom pages. Page content is portable Markdown edited with CodeMirror and rendered through the shared GFM, Shiki, KaTeX, and Mermaid pipeline. Published pages are available at `/[slug]`; autosaved changes stay private until an explicit save or lifecycle action. See `docs/pages.md` for lifecycle and security details.
+
+## Navigation
+
+Use `/admin/navigation` to add page, built-in, or external links; control visibility and new-tab behavior; and reorder items with drag-and-drop or accessible arrow controls. The public header reads only ordered visible items from PostgreSQL and automatically omits page links whose target is not published.
 
 ## Validation
 
@@ -60,9 +64,10 @@ npm run build
 - `PROGRESS.md` records implementation status.
 - `docs/database.md` documents the database foundation.
 - `docs/deployment.md` documents local and container deployment.
-- `docs/public-shell.md` documents the temporary public shell and fixture boundary.
+- `docs/public-shell.md` documents the responsive, database-driven public shell.
 - `docs/authentication.md` documents administrator setup and authentication security.
 - `docs/profile-settings.md` documents profile, social-link, site-identity, and appearance settings.
 - `docs/pages.md` documents custom-page lifecycle, autosave isolation, the editor, and Markdown rendering.
+- `docs/navigation.md` documents destination integrity, public visibility, link behavior, and transactional ordering.
 
 Do not begin a later milestone until the current milestone passes its required checks.

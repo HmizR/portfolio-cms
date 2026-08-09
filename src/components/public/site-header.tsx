@@ -1,10 +1,10 @@
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 
-import type { NavigationItemFixture } from "@/features/public-shell/public-shell.fixtures";
+import type { PublicNavigationItem } from "@/features/navigation/destination";
 
 interface SiteHeaderProps {
-  navigation: NavigationItemFixture[];
+  navigation: PublicNavigationItem[];
   siteName: string;
 }
 
@@ -12,10 +12,12 @@ function NavigationLinks({ navigation }: Pick<SiteHeaderProps, "navigation">) {
   return (
     <ul className="flex items-center gap-7">
       {navigation.map((item) => (
-        <li key={item.label}>
+        <li key={item.id}>
           <Link
             className="text-sm font-medium text-slate-600 underline-offset-8 transition-colors hover:text-[var(--public-accent)] hover:underline focus-visible:text-[var(--public-accent)]"
             href={item.href}
+            rel={item.openNewTab ? "noopener noreferrer" : undefined}
+            target={item.openNewTab ? "_blank" : undefined}
           >
             {item.label}
           </Link>
@@ -36,11 +38,11 @@ export function SiteHeader({ navigation, siteName }: SiteHeaderProps) {
           {siteName}
         </Link>
 
-        <nav aria-label="Primary navigation" className="hidden md:block">
+        {navigation.length > 0 ? <nav aria-label="Primary navigation" className="hidden md:block">
           <NavigationLinks navigation={navigation} />
-        </nav>
+        </nav> : null}
 
-        <details className="group relative md:hidden">
+        {navigation.length > 0 ? <details className="group relative md:hidden">
           <summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-sm px-2 py-2 text-sm font-semibold text-slate-700 hover:text-[var(--public-accent)] focus-visible:text-[var(--public-accent)] [&::-webkit-details-marker]:hidden">
             Menu
             <ChevronDown
@@ -55,10 +57,12 @@ export function SiteHeader({ navigation, siteName }: SiteHeaderProps) {
           >
             <ul>
               {navigation.map((item) => (
-                <li key={item.label}>
+                <li key={item.id}>
                   <Link
                     className="block rounded-sm px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-stone-100 hover:text-[var(--public-accent)] focus-visible:bg-stone-100 focus-visible:text-[var(--public-accent)]"
                     href={item.href}
+                    rel={item.openNewTab ? "noopener noreferrer" : undefined}
+                    target={item.openNewTab ? "_blank" : undefined}
                   >
                     {item.label}
                   </Link>
@@ -66,7 +70,7 @@ export function SiteHeader({ navigation, siteName }: SiteHeaderProps) {
               ))}
             </ul>
           </nav>
-        </details>
+        </details> : null}
       </div>
     </header>
   );

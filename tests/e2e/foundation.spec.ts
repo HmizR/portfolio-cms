@@ -37,7 +37,7 @@ test("provides a keyboard-accessible mobile navigation", async ({ page }) => {
   await menuSummary.focus();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("navigation", { name: "Mobile navigation" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Research", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Research Lab", exact: true })).toBeVisible();
   await expect(page.getByRole("complementary", { name: "Dr. Maya Chen" })).toBeVisible();
 
   const hasHorizontalOverflow = await page.evaluate(

@@ -212,6 +212,35 @@ export const pages = pgTable(
   ],
 );
 
+export const navigationItems = pgTable(
+  "navigation_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    label: text("label").notNull(),
+    type: text("type").notNull(),
+    pageId: uuid("page_id").references(() => pages.id, { onDelete: "cascade" }),
+    url: text("url"),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    isVisible: boolean("is_visible").default(true).notNull(),
+    openNewTab: boolean("open_new_tab").default(false).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    index("navigation_items_sort_order_index").on(table.sortOrder),
+    index("navigation_items_page_id_index").on(table.pageId),
+    check("navigation_items_label_check", sql`length(trim(${table.label})) > 0`),
+    check("navigation_items_sort_order_check", sql`${table.sortOrder} >= 0`),
+    check(
+      "navigation_items_destination_check",
+      sql`(
+        (${table.type} = 'page' and ${table.pageId} is not null and ${table.url} is null)
+        or (${table.type} = 'external' and ${table.pageId} is null and ${table.url} is not null)
+        or (${table.type} in ('posts', 'projects', 'publications', 'cv') and ${table.pageId} is null and ${table.url} is null)
+      )`,
+    ),
+  ],
+);
+
 export const authSchema = {
   user: users,
   session: sessions,

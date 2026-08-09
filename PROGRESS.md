@@ -16,11 +16,11 @@ Do not use this file as a replacement for requirements or architecture documenta
 
 Current phase:
 
-**Milestone 4 complete / ready for Milestone 5**
+**Milestone 5 complete / ready for Milestone 6**
 
 Overall status:
 
-**The application foundation, responsive public shell, authentication, profile/settings, and complete custom-page publishing workflow are implemented and validated. Milestone 5 has not started.**
+**The application foundation, responsive public shell, authentication, profile/settings, custom-page publishing, and database-driven navigation are implemented and validated. Milestone 6 has not started.**
 
 ---
 
@@ -250,21 +250,31 @@ Completion checks:
 
 ## Milestone 5 — Navigation
 
-Status: **Not started**
+Status: **Complete**
 
 Tasks:
 
-- [ ] Add navigation_items schema
-- [ ] Add migration
-- [ ] Implement navigation CRUD
-- [ ] Implement item visibility
-- [ ] Implement open-new-tab
-- [ ] Implement internal/system/external destinations
-- [ ] Implement drag reordering
-- [ ] Implement keyboard-accessible reordering
-- [ ] Persist sort order transactionally
-- [ ] Replace fixture public nav with database nav
-- [ ] Add navigation tests
+- [x] Add navigation_items schema
+- [x] Add migration
+- [x] Implement navigation CRUD
+- [x] Implement item visibility
+- [x] Implement open-new-tab
+- [x] Implement internal/system/external destinations
+- [x] Implement drag reordering
+- [x] Implement keyboard-accessible reordering
+- [x] Persist sort order transactionally
+- [x] Replace fixture public nav with database nav
+- [x] Add navigation tests
+
+Completion checks:
+
+- [x] `npm run lint`
+- [x] `npm run typecheck`
+- [x] `npm run test`
+- [x] `npm run test:e2e`
+- [x] `npm run build`
+- [x] Navigation migration generated, inspected, and applied to development, isolated test, and Compose databases
+- [x] Navigation, public-shell, pages, database, architecture, README, and progress documentation updated
 
 ---
 
@@ -464,21 +474,21 @@ Tasks:
 
 # 6. Current Task
 
-**Milestone 4 — Pages is complete. No implementation task is currently in progress.**
+**Milestone 5 — Navigation is complete. No implementation task is currently in progress.**
 
-Completed page work:
+Completed navigation work:
 
-1. `pages` stores unique stable slugs, lifecycle state, publish time, display settings, page metadata, canonical Markdown, and a separate private autosave buffer.
-2. `/admin/pages` provides create, list, edit, delete, publish, move-to-draft, and archive workflows; every mutation independently authenticates and validates external input.
-3. CodeMirror 6 provides Markdown, preview, split, toolbar, expanded editing, and an autosave indicator. Autosave never changes canonical published content.
-4. One sanitized Markdown pipeline provides GFM, footnotes, heading anchors, server-side Shiki highlighting, KaTeX, and strict Mermaid rendering.
-5. Published pages render through the restrained public shell at `/[slug]`; drafts and archived pages return 404.
-6. Protected previews use the real public presentation, show current autosaved drafts, require an administrator session, and opt out of indexing.
-7. Explicit page mutations invalidate the shared public-page cache and affected old/new slug routes.
-8. Unit tests cover slug/validation/Markdown behavior and unsafe content. Playwright covers create, autosave, protected preview, publish, private published-page autosave, archive, and delete.
-9. Navigation remains a fixture until Milestone 5; editor uploads and the media picker remain Milestone 8 work.
+1. `navigation_items` stores labels, finite destination types, page relationships, external URLs, visibility, new-tab behavior, and persistent non-negative sort positions.
+2. Database checks enforce mutually exclusive page/external/system destination shapes; page relationships use IDs and cascade on page deletion.
+3. `/admin/navigation` provides create, edit, delete, visibility, and new-tab controls for page, posts, projects, publications, CV, and external destinations.
+4. Native drag-and-drop and explicit Move up/Move down buttons share a complete-list reorder action. The server validates set equality and persists contiguous positions transactionally.
+5. Deletion compacts ordering transactionally, and every mutation independently authenticates and validates untrusted input.
+6. Every public shell now reads ordered visible navigation from PostgreSQL; the temporary fixture module was removed.
+7. Page destinations resolve the current slug from the stable page ID and are omitted unless the target page is published. Page lifecycle changes invalidate the navigation cache.
+8. External new-tab links render with `noopener noreferrer`; an empty navigation set omits desktop and mobile menu controls.
+9. Unit tests cover destination shapes, unsafe URLs, duplicate reorder IDs, system mapping, and publication visibility. Playwright now maintains the full create-page-to-navbar critical flow, including drag/keyboard order, hide/show, archive removal, and cascade cleanup.
 
-Next recommended task: **Milestone 5 — Navigation**. It has not been started.
+Next recommended task: **Milestone 6 — Posts**. It has not been started.
 
 ---
 
@@ -604,6 +614,24 @@ Milestone 4 — 2026-08-09
 - In-app browser manual inspection: UNAVAILABLE because browser discovery and its recovery guidance both timed out; the complete standalone Playwright rendering and interaction suite passed
 - `npm audit --omit=dev`: 5 moderate tooling-only esbuild advisories through Drizzle Kit; npm still offers only a breaking Drizzle Kit downgrade as an automated fix
 
+Milestone 5 — 2026-08-09
+
+- `npm run lint`: PASS
+- `npm run typecheck`: PASS
+- `npm run test`: PASS (11 files, 22 tests; navigation coverage includes destination integrity, unsafe external URLs, duplicate reorder IDs, built-in route mapping, and published-page filtering)
+- `npm run test:e2e`: PASS (5 Chromium tests; the critical flow covers page publishing, page/external/system navigation CRUD, native drag ordering, keyboard ordering, persisted visibility, navbar order/new-tab behavior, archive removal, and page-delete cascade cleanup)
+- `npm run build`: PASS (`/admin/navigation` and all public routes render dynamically without requiring a live database during image compilation)
+- `npm run db:generate`: PASS (`drizzle/0004_previous_madelyne_pryor.sql`; final schema check reports no further changes)
+- `npm run db:migrate`: PASS against the development PostgreSQL service
+- Isolated Playwright database creation and migration: PASS
+- `npm run db:check`: PASS against the healthy Compose PostgreSQL service
+- `docker compose config --quiet`: PASS
+- `docker compose build app migrate`: PASS (Node 22 standalone application and migration images)
+- `docker compose run --rm migrate`: PASS against the healthy Compose PostgreSQL service
+- Compose `postgres` and `storage` services: RUNNING and HEALTHY
+- In-app browser manual inspection: UNAVAILABLE because browser discovery and its recovery guidance both timed out; the complete standalone Playwright desktop/mobile rendering and interaction suite passed
+- `npm audit --omit=dev`: 5 moderate tooling-only esbuild advisories through Drizzle Kit; npm still offers only a breaking Drizzle Kit downgrade as an automated fix
+
 ---
 
 # 11. Important Handoff Notes
@@ -615,7 +643,7 @@ Any future coding session should:
 3. Read `ARCHITECTURE.md`.
 4. Read this file.
 5. Inspect the repository before making changes.
-6. Begin Milestone 4 only when it is the requested scope.
+6. Begin Milestone 6 only when it is the requested scope.
 7. Avoid prematurely implementing later milestones.
 8. Update this file before ending meaningful work.
 
@@ -628,8 +656,7 @@ Milestone 0 handoff decisions:
 
 Milestone 1 handoff decisions:
 
-- Profile and site fixture replacement was completed in Milestone 3; only navigation remains in `src/features/public-shell/public-shell.fixtures.ts`.
-- Replace fixture navigation with database navigation in Milestone 5; do not scatter fixture imports into public components.
+- Profile/site fixture replacement was completed in Milestone 3, and navigation fixture replacement was completed in Milestone 5. No public data fixture remains.
 - Keep the public shell server-rendered. Add a Client Component only when interaction cannot be expressed accessibly with native HTML.
 - Public defaults use a system sans-serif body stack, Georgia headings, and a restrained teal accent through controlled tokens.
 - Preserve the route-group boundary so future admin styling does not leak into public presentation.
@@ -649,7 +676,7 @@ Milestone 3 handoff decisions:
 - Keep `profiles` and `site_settings` singletons while V1 remains single-administrator.
 - Keep social networks flexible; do not replace `social_links` with fixed platform columns or a platform enum.
 - Keep public profile/site reads behind `getPublicSiteData()` so request-time deferral, cache tagging, and invalidation remain centralized.
-- Navigation remains the only public-shell fixture and is owned by Milestone 5.
+- Public navigation is now database-driven through the Milestone 5 navigation feature.
 - The avatar URL is an intentional bridge to Milestone 8; future uploads must replace it through the storage abstraction rather than adding storage code to the profile feature.
 - Appearance values remain controlled tokens. Dark mode is still an open product decision, not an unfinished Milestone 3 requirement.
 
@@ -659,6 +686,16 @@ Milestone 4 handoff decisions:
 - Keep all later Markdown consumers on `src/lib/markdown/render.ts`. Do not add separate public, admin-preview, or content-type renderers.
 - Normalize timestamp values after the Next.js public-page cache boundary because cached values are serialized before being returned to application code.
 - Keep raw HTML disabled and Mermaid in strict mode. Shiki remains server-side; only diagram rendering is dynamically loaded in the browser when required.
-- Keep page navigation on the fixture until Milestone 5. Do not attach pages to the navbar before navigation ordering, visibility, and destination integrity are implemented.
+- Page navigation now stores stable page IDs and resolves current slugs through the Milestone 5 navigation feature.
 - Keep URL-based image insertion as the Milestone 4 boundary. Uploads, drag/drop, clipboard images, and the media picker belong to Milestone 8 and must use the storage abstraction.
 - The external page Open Graph image URL is an interim bridge. Replace it with a media relationship in Milestone 8 without duplicating the later shared SEO architecture from Milestone 11.
+
+Milestone 5 handoff decisions:
+
+- Keep destination types finite: page, posts, projects, publications, CV, and external. Do not introduce an arbitrary internal-path type that bypasses typed destination integrity.
+- Keep page navigation relationships ID-based. Public page hrefs must be resolved from the current slug and omitted when the target is not published.
+- Keep complete-list reorder validation and transactional writes. Do not persist drag order through independent client updates that can leave partial positions.
+- Preserve both native drag-and-drop and explicit up/down controls; the latter is the keyboard-accessible ordering path.
+- Keep public navigation reads behind `getPublicNavigation()` and its cache tag. Navigation mutations and relevant page lifecycle changes must invalidate that tag.
+- Page deletion intentionally cascades its page navigation items. Other destination types do not depend on future content tables yet.
+- Built-in posts/projects/publications/CV links may be configured before those routes ship, but their route implementation remains owned by Milestones 6, 7, 9, and 10 respectively.

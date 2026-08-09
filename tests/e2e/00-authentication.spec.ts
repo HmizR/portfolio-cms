@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe.configure({ mode: "serial" });
 
 test("completes setup, protects admin routes, and supports login and logout", async ({ page }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/setup$/);
   await expect(page.getByRole("heading", { name: "Create your administrator" })).toBeVisible();
@@ -63,7 +63,7 @@ test("completes setup, protects admin routes, and supports login and logout", as
   await page.getByRole("link", { name: "New page" }).click();
   await page.getByLabel("Title").fill("Hello");
   await page.getByRole("button", { name: "Create draft" }).click();
-  await expect(page).toHaveURL(/\/admin\/pages\/[0-9a-f-]+$/);
+  await expect(page).toHaveURL(/\/admin\/pages\/[0-9a-f-]+$/, { timeout: 60_000 });
   const editPageUrl = page.url();
   const previewHref = await page.getByRole("link", { name: /Preview public layout/ }).getAttribute("href");
   expect(previewHref).toMatch(/^\/preview\/pages\/[0-9a-f-]+$/);
@@ -97,6 +97,67 @@ test("completes setup, protects admin routes, and supports login and logout", as
   await expect(page.getByRole("heading", { name: "Hello from Markdown" })).toBeVisible();
   await expect(page.getByText("Published content")).toBeVisible();
 
+  await page.goto("/admin/navigation");
+  await expect(page.getByRole("heading", { name: "No navigation items yet" })).toBeVisible();
+  const addNavigationForm = page.getByRole("form", { name: "Add navigation item" });
+  await addNavigationForm.getByLabel("Label").fill("Hello");
+  await addNavigationForm.getByLabel("Page").selectOption({ label: "Hello (/hello, published)" });
+  await addNavigationForm.getByRole("button", { name: "Add item" }).click();
+  await expect(page.getByRole("form", { name: "Edit Hello" })).toBeVisible();
+
+  await addNavigationForm.getByLabel("Label").fill("Research Lab");
+  await addNavigationForm.getByLabel("Destination type").selectOption("external");
+  await addNavigationForm.getByLabel("External URL").fill("https://example.com/research");
+  await addNavigationForm.getByLabel("Open in a new tab").check();
+  await addNavigationForm.getByRole("button", { name: "Add item" }).click();
+  await expect(page.getByRole("form", { name: "Edit Research Lab" })).toBeVisible();
+
+  await addNavigationForm.getByLabel("Label").fill("Temporary CV");
+  await addNavigationForm.getByLabel("Destination type").selectOption("cv");
+  await addNavigationForm.getByRole("button", { name: "Add item" }).click();
+  await expect(page.getByRole("form", { name: "Edit Temporary CV" })).toBeVisible();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Delete Temporary CV" }).click();
+  await expect(page.getByRole("form", { name: "Edit Temporary CV" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Move Research Lab up" })).toBeEnabled();
+
+  const helloNavigationItem = page.locator("ol > li").filter({ has: page.getByRole("form", { name: "Edit Hello" }) });
+  await page.getByRole("button", { name: "Drag Research Lab to reorder" }).dragTo(helloNavigationItem);
+  await expect(page.locator("ol > li").first().getByRole("form", { name: "Edit Research Lab" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Move Hello up" })).toBeEnabled();
+  const moveResearchDown = page.getByRole("button", { name: "Move Research Lab down" });
+  await moveResearchDown.click();
+  await expect(moveResearchDown).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Move Hello down" })).toBeEnabled();
+  await page.reload();
+  await expect(page.locator("ol > li").first().getByRole("form", { name: "Edit Hello" })).toBeVisible();
+
+  await page.goto("/");
+  const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
+  await expect(primaryNavigation.getByRole("link", { name: "Hello" })).toHaveAttribute("href", "/hello");
+  await expect(primaryNavigation.getByRole("link", { name: "Research Lab" })).toHaveAttribute("target", "_blank");
+  await expect(primaryNavigation.getByRole("link")).toHaveText(["Hello", "Research Lab"]);
+
+  await page.goto("/admin/navigation");
+  let helloNavigationForm = page.getByRole("form", { name: "Edit Hello" });
+  await helloNavigationForm.getByLabel("Visible publicly").uncheck();
+  await helloNavigationForm.getByRole("button", { name: "Save item" }).click();
+  await expect(helloNavigationForm.locator("..")).toHaveAttribute("data-visible", "false");
+  await page.reload();
+  helloNavigationForm = page.getByRole("form", { name: "Edit Hello" });
+  await expect(helloNavigationForm.getByLabel("Visible publicly")).not.toBeChecked();
+  await page.goto("/");
+  await expect(page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Hello" })).toHaveCount(0);
+  expect((await page.request.get("/hello")).status()).toBe(200);
+
+  await page.goto("/admin/navigation");
+  helloNavigationForm = page.getByRole("form", { name: "Edit Hello" });
+  await helloNavigationForm.getByLabel("Visible publicly").check();
+  await helloNavigationForm.getByRole("button", { name: "Save item" }).click();
+  await expect(helloNavigationForm.locator("..")).toHaveAttribute("data-visible", "true");
+  await page.reload();
+  await expect(page.getByRole("form", { name: "Edit Hello" }).getByLabel("Visible publicly")).toBeChecked();
+
   await page.goto(editPageUrl);
   await page.locator(".cm-content").fill("# Private autosave\n\nThis change is not public until explicitly saved.");
   await expect(page.getByText(/^Saved \d/)).toBeVisible({ timeout: 30_000 });
@@ -111,11 +172,17 @@ test("completes setup, protects admin routes, and supports login and logout", as
   await expect(page.getByText("Page archived.")).toBeVisible();
   const archivedResponse = await page.request.get("/hello");
   expect(archivedResponse.status()).toBe(404);
+  await page.goto("/");
+  await expect(page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Hello" })).toHaveCount(0);
 
+  await page.goto(editPageUrl);
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Delete page" }).click();
   await expect(page).toHaveURL(/\/admin\/pages$/);
   await expect(page.getByRole("heading", { name: "No pages yet" })).toBeVisible();
+  await page.goto("/admin/navigation");
+  await expect(page.getByRole("form", { name: "Edit Hello" })).toHaveCount(0);
+  await expect(page.getByRole("form", { name: "Edit Research Lab" })).toBeVisible();
 
   await page.goto("/setup");
   await expect(page).toHaveURL(/\/admin$/);

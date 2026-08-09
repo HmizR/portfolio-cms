@@ -597,6 +597,8 @@ Rules:
 - System destinations are represented by type.
 - Invalid combinations are rejected by validation.
 
+Milestone 5 implements page, external, posts, projects, publications, and CV destinations. Database checks enforce mutually exclusive page/URL/system shapes, and page references cascade on deletion. Public resolution joins page destinations by ID and omits them unless the target is published. Ordering writes and delete compaction are transactional; the admin provides native drag-and-drop plus explicit up/down controls. Public navigation is cached behind its own tag and revalidated by navigation mutations and page lifecycle changes.
+
 ---
 
 # 16. Homepage Sections
