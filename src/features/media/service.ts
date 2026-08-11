@@ -82,6 +82,12 @@ export async function assertImageMediaIds(ids: Array<string | null>): Promise<vo
   }
 }
 
+export async function assertPdfMediaId(id: string | null): Promise<void> {
+  if (!id) return;
+  const [record] = await db.select({ mimeType: media.mimeType }).from(media).where(eq(media.id, id)).limit(1);
+  if (!record || record.mimeType !== "application/pdf") throw new Error("Select an uploaded PDF document.");
+}
+
 export async function deleteMedia(id: string): Promise<boolean> {
   const [record] = await db.select({ storageKey: media.storageKey }).from(media).where(eq(media.id, id)).limit(1);
   if (!record) return false;

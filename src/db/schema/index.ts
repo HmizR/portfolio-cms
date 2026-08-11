@@ -408,6 +408,133 @@ export const projectTechnologies = pgTable(
   ],
 );
 
+export const publications = pgTable(
+  "publications",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: text("title").notNull(),
+    slug: text("slug").notNull(),
+    abstract: text("abstract").default("").notNull(),
+    contentMarkdown: text("content_markdown").default("").notNull(),
+    draftMarkdown: text("draft_markdown"),
+    publicationType: text("publication_type").default("other").notNull(),
+    venue: text("venue"),
+    publisher: text("publisher"),
+    publicationDate: date("publication_date"),
+    doi: text("doi"),
+    externalUrl: text("external_url"),
+    pdfMediaId: uuid("pdf_media_id").references(() => media.id, { onDelete: "set null" }),
+    isFeatured: boolean("is_featured").default(false).notNull(),
+    status: text("status").default("draft").notNull(),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    seoTitle: text("seo_title"),
+    seoDescription: text("seo_description"),
+    canonicalUrl: text("canonical_url"),
+    ogMediaId: uuid("og_media_id").references(() => media.id, { onDelete: "set null" }),
+    ogImageUrl: text("og_image_url"),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("publications_slug_unique").on(table.slug),
+    index("publications_status_date_index").on(table.status, table.publicationDate),
+    index("publications_status_featured_index").on(table.status, table.isFeatured),
+    index("publications_pdf_media_id_index").on(table.pdfMediaId),
+    index("publications_og_media_id_index").on(table.ogMediaId),
+    check("publications_title_check", sql`length(trim(${table.title})) > 0`),
+    check("publications_type_check", sql`${table.publicationType} in ('journal', 'conference', 'preprint', 'thesis', 'book', 'chapter', 'report', 'other')`),
+    check("publications_status_check", sql`${table.status} in ('draft', 'published', 'archived')`),
+    check("publications_published_at_check", sql`${table.status} <> 'published' or ${table.publishedAt} is not null`),
+  ],
+);
+
+export const publicationAuthors = pgTable(
+  "publication_authors",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    publicationId: uuid("publication_id").notNull().references(() => publications.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    profileUrl: text("profile_url"),
+    position: integer("position").notNull(),
+    isOwner: boolean("is_owner").default(false).notNull(),
+  },
+  (table) => [
+    uniqueIndex("publication_authors_publication_position_unique").on(table.publicationId, table.position),
+    index("publication_authors_publication_id_index").on(table.publicationId),
+    check("publication_authors_name_check", sql`length(trim(${table.name})) > 0`),
+    check("publication_authors_position_check", sql`${table.position} >= 0`),
+  ],
+);
+
+export const education = pgTable(
+  "education",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    institution: text("institution").notNull(),
+    institutionUrl: text("institution_url"),
+    degree: text("degree").notNull(),
+    field: text("field").default("").notNull(),
+    location: text("location").default("").notNull(),
+    startDate: date("start_date"),
+    endDate: date("end_date"),
+    isCurrent: boolean("is_current").default(false).notNull(),
+    descriptionMarkdown: text("description_markdown").default("").notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    index("education_sort_order_index").on(table.sortOrder),
+    check("education_institution_check", sql`length(trim(${table.institution})) > 0`),
+    check("education_degree_check", sql`length(trim(${table.degree})) > 0`),
+    check("education_sort_order_check", sql`${table.sortOrder} >= 0`),
+    check("education_current_end_check", sql`not ${table.isCurrent} or ${table.endDate} is null`),
+    check("education_date_range_check", sql`${table.endDate} is null or ${table.startDate} is null or ${table.endDate} >= ${table.startDate}`),
+  ],
+);
+
+export const experience = pgTable(
+  "experience",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    organization: text("organization").notNull(),
+    organizationUrl: text("organization_url"),
+    position: text("position").notNull(),
+    location: text("location").default("").notNull(),
+    startDate: date("start_date"),
+    endDate: date("end_date"),
+    isCurrent: boolean("is_current").default(false).notNull(),
+    descriptionMarkdown: text("description_markdown").default("").notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    index("experience_sort_order_index").on(table.sortOrder),
+    check("experience_organization_check", sql`length(trim(${table.organization})) > 0`),
+    check("experience_position_check", sql`length(trim(${table.position})) > 0`),
+    check("experience_sort_order_check", sql`${table.sortOrder} >= 0`),
+    check("experience_current_end_check", sql`not ${table.isCurrent} or ${table.endDate} is null`),
+    check("experience_date_range_check", sql`${table.endDate} is null or ${table.startDate} is null or ${table.endDate} >= ${table.startDate}`),
+  ],
+);
+
+export const skills = pgTable(
+  "skills",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    category: text("category").notNull(),
+    sortOrder: integer("sort_order").default(0).notNull(),
+    isVisible: boolean("is_visible").default(true).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("skills_category_name_unique").on(sql`lower(${table.category})`, sql`lower(${table.name})`),
+    index("skills_category_sort_order_index").on(table.category, table.sortOrder),
+    check("skills_name_check", sql`length(trim(${table.name})) > 0`),
+    check("skills_category_check", sql`length(trim(${table.category})) > 0`),
+    check("skills_sort_order_check", sql`${table.sortOrder} >= 0`),
+  ],
+);
+
 export const authSchema = {
   user: users,
   session: sessions,

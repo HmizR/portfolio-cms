@@ -16,11 +16,11 @@ Do not use this file as a replacement for requirements or architecture documenta
 
 Current phase:
 
-**Milestone 8 complete / ready for Milestone 9**
+**Milestone 9 complete / ready for Milestone 10**
 
 Overall status:
 
-**The application foundation, responsive public shell, authentication, profile/settings, pages, navigation, posts/RSS, projects/technologies, and secure S3-backed media management are implemented and validated. Milestone 9 has not started.**
+**The application foundation, public shell, authentication, profile/settings, pages, navigation, posts/RSS, projects, media, publications, education, experience, and skills are implemented and validated. Milestone 10 has not started.**
 
 ---
 
@@ -85,6 +85,8 @@ Confirmed:
 - Media uses canonical generated storage keys behind a provider interface; the S3-compatible bucket remains private and `/media/[id]` streams validated objects with server-held credentials.
 - Managed profile/page/post/project images use nullable media IDs with `ON DELETE SET NULL`; existing external URL fields remain compatibility fallbacks.
 - Uploads authenticate independently and validate size, allowlisted MIME/extension agreement, file signatures, and bounded image dimensions before persistence.
+- Publications use the shared canonical/private-draft Markdown boundary, transactionally ordered authors, finite publication types, and managed PDF/social media relationships.
+- Education and experience use checked structured timelines with explicit ordering; skills use categorized visible rows without percentage bars.
 
 ---
 
@@ -358,42 +360,42 @@ Tasks:
 
 ## Milestone 9 — Academic Portfolio
 
-Status: **Not started**
+Status: **Complete**
 
 Tasks:
 
 ### Publications
 
-- [ ] Add publications schema
-- [ ] Add publication_authors schema
-- [ ] Add migrations
-- [ ] Implement publication CRUD
-- [ ] Implement publication types
-- [ ] Implement author ordering
-- [ ] Implement PDF attachment
-- [ ] Implement publication index
-- [ ] Implement publication detail
+- [x] Add publications schema
+- [x] Add publication_authors schema
+- [x] Add migrations
+- [x] Implement publication CRUD
+- [x] Implement publication types
+- [x] Implement author ordering
+- [x] Implement PDF attachment
+- [x] Implement publication index
+- [x] Implement publication detail
 
 ### Education
 
-- [ ] Add education schema
-- [ ] Add migration
-- [ ] Implement education CRUD
-- [ ] Implement ordering
+- [x] Add education schema
+- [x] Add migration
+- [x] Implement education CRUD
+- [x] Implement ordering
 
 ### Experience
 
-- [ ] Add experience schema
-- [ ] Add migration
-- [ ] Implement experience CRUD
-- [ ] Implement ordering
+- [x] Add experience schema
+- [x] Add migration
+- [x] Implement experience CRUD
+- [x] Implement ordering
 
 ### Skills
 
-- [ ] Add skills schema
-- [ ] Add migration
-- [ ] Implement skill CRUD
-- [ ] Implement skill categories/order
+- [x] Add skills schema
+- [x] Add migration
+- [x] Implement skill CRUD
+- [x] Implement skill categories/order
 
 ---
 
@@ -484,22 +486,20 @@ Tasks:
 
 # 6. Current Task
 
-**Milestone 8 — Media is complete. No implementation task is currently in progress.**
+**Milestone 9 — Academic Portfolio is complete. No implementation task is currently in progress.**
 
-Completed media work:
+Completed academic portfolio work:
 
-1. `media` stores canonical generated storage keys, generated/original filenames, checked MIME types, positive sizes, paired dimensions, alt text, and UTC timestamps.
-2. Indexed nullable media relationships now serve the profile avatar plus page, post, and project cover/social images with `ON DELETE SET NULL`; legacy external URLs remain compatibility fallbacks.
-3. A provider interface owns upload/read/delete behavior, and the S3 adapter supports MinIO and other compatible endpoints without leaking provider calls into content features.
-4. The bucket remains private. `/media/[id]` validates a stable media ID, resolves its storage key, streams it with server credentials, pins the validated MIME type, and sends `nosniff` and immutable cache headers.
-5. Authenticated uploads validate request/file size, MIME allowlists, extension consistency, file signatures, bounded header-derived dimensions, and server-generated UUID storage keys. SVG remains rejected.
-6. `/admin/media` provides upload, searchable grid selection, dimensions/size details, alternative-text editing, usable URL copying, confirmed deletion, empty states, and actionable upload errors.
-7. The shared CodeMirror editor uses the media picker and native CodeMirror paste/drop handlers to upload images and insert portable Markdown without changing publication state.
-8. The admin profile/page/post/project forms can select managed images. Public renderers and metadata prefer media relationships while preserving existing external URLs.
-9. The admin overview includes a media count, and media deletion invalidates the public profile cache where required.
-10. Unit tests cover metadata, signatures, bounded dimension parsing, and clipboard/drop selection. Playwright covers upload, dimensions, alt text, search, picker insertion, publication, private-bucket delivery, deletion, and anonymous API protection.
+1. `publications` implements unique slugs, finite scholarly types, draft/published/archived state, canonical/private-draft Markdown, metadata, and featured ordering.
+2. `publication_authors` stores ordered author rows and replaces the complete assignment transactionally with its publication.
+3. Publication CRUD includes authenticated preview, explicit lifecycle controls, public archive/detail routes, DOI and safe external links, and targeted cache invalidation.
+4. Managed PDF and social-image relationships use `ON DELETE SET NULL`; services independently verify PDF versus image MIME assignments.
+5. Education and experience CRUD supports exact dates, current-state rules, safe links, Markdown descriptions, deletion, and accessible up/down ordering.
+6. Skills CRUD supports categories, visibility, case-insensitive uniqueness inside a category, and accessible ordering without percentage bars.
+7. Admin navigation and the dashboard include academic domains. Timeline and skill rows remain structured sources for later controlled homepage and CV consumers.
+8. Unit and browser coverage validate inputs, author ordering, private PDF delivery, publication lifecycle/public visibility, and structured-record creation.
 
-Next recommended task: **Milestone 9 — Academic Portfolio**. It has not been started.
+Next recommended task: **Milestone 10 — CV**. It has not been started.
 
 ---
 
@@ -696,6 +696,22 @@ Milestone 8 — 2026-08-11
 - `npm audit --omit=dev`: 5 moderate tooling-only esbuild advisories through Drizzle Kit; the high-severity no-fix image parser advisory was eliminated by replacing that dependency with bounded allowlisted header parsing
 - Playwright development startup uses Next.js's documented webpack fallback because Turbopack's generated task cache panicked during repeated long serial runs; the production Turbopack build passes
 
+Milestone 9 — 2026-08-11
+
+- `npm run lint`: PASS
+- `npm run typecheck`: PASS (the restricted sandbox could not resolve the parent user directory, so the identical compiler command was rerun through the approved host execution path)
+- `npm run test`: PASS (19 files, 41 tests; new coverage includes publication normalization and academic-record validation)
+- `npm run test:e2e`: PASS (5 Chromium tests; academic coverage creates education, experience, and skill records, uploads a real PDF to MinIO, orders multiple authors, publishes a publication, verifies public metadata/PDF delivery, then archives and deletes it)
+- `npm run build`: PASS (26 generated pages; all publication, academic admin, public archive/detail, and protected preview routes compile as dynamic routes)
+- `npm run db:generate`: PASS (`drizzle/0008_fuzzy_morg.sql`; final schema check reports no further changes)
+- `npm run db:migrate`: PASS against the development PostgreSQL service
+- Isolated Playwright database creation, all-migration application, and reset: PASS
+- `npm run db:check`: PASS against the healthy Compose PostgreSQL service
+- `docker compose config --quiet`: PASS
+- Compose `postgres` and `storage` services: RUNNING and HEALTHY
+- Real managed-PDF upload and private-bucket delivery: PASS against the running S3-compatible service
+- `npm audit --omit=dev`: unchanged at 5 moderate tooling-only esbuild advisories through Drizzle Kit; no production application runtime path is affected
+
 ---
 
 # 11. Important Handoff Notes
@@ -707,7 +723,7 @@ Any future coding session should:
 3. Read `ARCHITECTURE.md`.
 4. Read this file.
 5. Inspect the repository before making changes.
-6. Begin Milestone 9 only when it is the requested scope.
+6. Begin Milestone 10 only when it is the requested scope.
 7. Avoid prematurely implementing later milestones.
 8. Update this file before ending meaningful work.
 
@@ -793,5 +809,15 @@ Milestone 8 handoff decisions:
 - Do not reintroduce a general image parser without reviewing untrusted-input advisories. The current bounded parser reads only the headers required for JPEG, PNG, WebP, and GIF.
 - Keep media mutations independently authenticated. The public media route is read-only and resolves only an existing UUID-backed database row.
 - Deletion sets managed image foreign keys to null. Markdown URLs are portable text and may become broken after deletion, so preserve the explicit warning until reference tracking is designed.
-- Keep the shared CodeMirror picker/paste/drop integration reusable for future publications without adding publication behavior before Milestone 9.
+- Keep the shared CodeMirror picker/paste/drop integration reusable across pages, posts, projects, and publications.
 - Playwright uses the documented webpack development fallback on this Windows host because repeated long Turbopack development runs corrupted the generated task cache; production still validates with the default Turbopack build.
+
+Milestone 9 handoff decisions:
+
+- Keep publication canonical Markdown separate from the private autosave draft, matching the established content lifecycle; autosave must never publish.
+- Keep publication authors as ordered child rows and replace the complete author list transactionally so author order and publication updates cannot diverge.
+- Keep publication PDFs as managed `application/pdf` media IDs. Public delivery continues through the private-bucket media route, and social images remain independently image-validated.
+- Keep public publication reads behind `PUBLIC_PUBLICATIONS_CACHE_TAG`, with featured-first and publication-date ordering plus targeted invalidation after public-facing mutations.
+- Keep education and experience as structured timeline rows with exact dates, current-state rules, Markdown descriptions, and accessible ordering. They are data sources for later controlled homepage and CV consumers, not CV layout configuration themselves.
+- Keep skill categories administrator-defined and skills qualitative; do not add percentage or proficiency bars.
+- The publications built-in navigation destination is now live. CV remains owned by Milestone 10.

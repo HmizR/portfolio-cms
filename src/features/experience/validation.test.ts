@@ -1,0 +1,3 @@
+import { describe, expect, it } from "vitest";
+import { experienceFormSchema } from "@/features/experience/validation";
+describe("experience validation", () => { const base = { organization: "Research Lab", organizationUrl: "", position: "Engineer", location: "Remote", startDate: "2024-01-01", endDate: "", isCurrent: true, descriptionMarkdown: "Built **systems**." }; it("normalizes optional values", () => expect(experienceFormSchema.parse(base).endDate).toBeNull()); it("rejects unsafe URLs and invalid ranges", () => { expect(experienceFormSchema.safeParse({ ...base, organizationUrl: "data:text/html,x" }).success).toBe(false); expect(experienceFormSchema.safeParse({ ...base, isCurrent: false, endDate: "2023-01-01" }).success).toBe(false); }); });

@@ -523,6 +523,10 @@ created_at
 updated_at
 ```
 
+Milestone 9 implements publications with the same canonical/private-draft Markdown and explicit lifecycle boundary as other publishable content. Public reads are cache-tagged, featured-first, and date ordered. Author rows have UUID identity and unique per-publication positions; complete author replacement occurs transactionally with publication updates. PDF and social-image relationships use managed media IDs with `ON DELETE SET NULL`, and server services verify the selected media MIME type rather than trusting form state.
+
+Education and experience remain separate structured timeline tables with checked date/current-state invariants and explicit ordering. Skills use categorized rows with visibility and case-insensitive uniqueness inside a category. These are data sources for later finite homepage and CV consumers; Milestone 9 does not create CV configuration or a generic page builder.
+
 ---
 
 # 12. Relationship Tables

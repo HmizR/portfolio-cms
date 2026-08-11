@@ -1,0 +1,8 @@
+import "server-only";
+import { asc, eq, max } from "drizzle-orm";
+import { db } from "@/db";
+import { education } from "@/db/schema";
+import type { EducationInput } from "@/features/education/validation";
+export async function saveEducation(input: EducationInput) { const { id, ...values } = input; if (id) { const [row] = await db.update(education).set({ ...values, updatedAt: new Date() }).where(eq(education.id, id)).returning({ id: education.id }); if (!row) throw new Error("Education record not found."); return; } const [maximum] = await db.select({ value: max(education.sortOrder) }).from(education); await db.insert(education).values({ ...values, sortOrder: (maximum?.value ?? -1) + 1 }); }
+export async function deleteEducation(id: string) { await db.transaction(async (tx) => { await tx.delete(education).where(eq(education.id, id)); const rows = await tx.select({ id: education.id }).from(education).orderBy(asc(education.sortOrder)); for (const [sortOrder, row] of rows.entries()) await tx.update(education).set({ sortOrder }).where(eq(education.id, row.id)); }); }
+export async function moveEducation(id: string, direction: "up" | "down") { await db.transaction(async (tx) => { const rows = await tx.select({ id: education.id }).from(education).orderBy(asc(education.sortOrder)); const index = rows.findIndex((row) => row.id === id); const target = direction === "up" ? index - 1 : index + 1; if (index < 0 || target < 0 || target >= rows.length) return; for (const [sortOrder, row] of rows.entries()) { const next = sortOrder === index ? target : sortOrder === target ? index : sortOrder; if (next !== sortOrder) await tx.update(education).set({ sortOrder: next, updatedAt: new Date() }).where(eq(education.id, row.id)); } }); }

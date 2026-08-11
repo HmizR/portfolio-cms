@@ -1,6 +1,6 @@
 # PortfolioCMS
 
-PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, database-backed profile/settings, custom Markdown pages, dynamic navigation, chronological posts with RSS, featured portfolio projects with normalized technologies, and an S3-backed media library.
+PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, database-backed profile/settings, custom Markdown pages, dynamic navigation, chronological posts with RSS, featured projects, an S3-backed media library, publications, and structured education, experience, and skills.
 
 ## Foundation stack
 
@@ -58,6 +58,10 @@ Use `/admin/projects` to create, edit, preview, publish, archive, and delete por
 
 Use `/admin/media` to upload, search, select, describe, copy, and delete JPEG, PNG, WebP, GIF, and PDF files. Uploaded objects remain in the private S3-compatible bucket and are delivered through the application by stable media ID. The shared Markdown editor supports the media picker plus image paste and drop upload. See `docs/media.md` for storage, security, and editor integration details.
 
+## Academic portfolio
+
+Use `/admin/publications` to manage publishable scholarly work, ordered authors, DOI/external links, optional Markdown, and managed PDF attachments. Published work appears at `/publications`. Education, experience, and categorized visible skills are managed through their corresponding admin routes with accessible ordering controls. See `docs/academic-portfolio.md` for lifecycle, validation, ordering, and storage details.
+
 ## Validation
 
 ```bash
@@ -84,5 +88,6 @@ npm run build
 - `docs/posts.md` documents post publishing, normalized tags, chronological archives, previews, and RSS.
 - `docs/projects.md` documents project publishing, lifecycle states, featured ordering, technologies, previews, and links.
 - `docs/media.md` documents the media library, private object delivery, upload security, managed image fields, and editor integration.
+- `docs/academic-portfolio.md` documents publications, ordered authors, PDF attachments, education, experience, and skills.
 
 Do not begin a later milestone until the current milestone passes its required checks.

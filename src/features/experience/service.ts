@@ -1,0 +1,8 @@
+import "server-only";
+import { asc, eq, max } from "drizzle-orm";
+import { db } from "@/db";
+import { experience } from "@/db/schema";
+import type { ExperienceInput } from "@/features/experience/validation";
+export async function saveExperience(input: ExperienceInput) { const { id, ...values } = input; if (id) { const [row] = await db.update(experience).set({ ...values, updatedAt: new Date() }).where(eq(experience.id, id)).returning({ id: experience.id }); if (!row) throw new Error("Experience record not found."); return; } const [maximum] = await db.select({ value: max(experience.sortOrder) }).from(experience); await db.insert(experience).values({ ...values, sortOrder: (maximum?.value ?? -1) + 1 }); }
+export async function deleteExperience(id: string) { await db.transaction(async (tx) => { await tx.delete(experience).where(eq(experience.id, id)); const rows = await tx.select({ id: experience.id }).from(experience).orderBy(asc(experience.sortOrder)); for (const [sortOrder, row] of rows.entries()) await tx.update(experience).set({ sortOrder }).where(eq(experience.id, row.id)); }); }
+export async function moveExperience(id: string, direction: "up" | "down") { await db.transaction(async (tx) => { const rows = await tx.select({ id: experience.id }).from(experience).orderBy(asc(experience.sortOrder)); const index = rows.findIndex((row) => row.id === id); const target = direction === "up" ? index - 1 : index + 1; if (index < 0 || target < 0 || target >= rows.length) return; for (const [sortOrder, row] of rows.entries()) { const next = sortOrder === index ? target : sortOrder === target ? index : sortOrder; if (next !== sortOrder) await tx.update(experience).set({ sortOrder: next, updatedAt: new Date() }).where(eq(experience.id, row.id)); } }); }
