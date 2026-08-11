@@ -1,6 +1,6 @@
 # PortfolioCMS
 
-PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, database-backed profile/settings, custom Markdown pages, dynamic navigation, and chronological posts with tags and RSS.
+PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, database-backed profile/settings, custom Markdown pages, dynamic navigation, chronological posts with RSS, and featured portfolio projects with normalized technologies.
 
 ## Foundation stack
 
@@ -50,6 +50,10 @@ Use `/admin/navigation` to add page, built-in, or external links; control visibi
 
 Use `/admin/posts` to create, edit, preview, publish, archive, and delete posts. Reusable normalized tags are managed at `/admin/posts/tags`. Published posts appear chronologically at `/posts`, resolve at `/posts/[slug]`, and are included in `/feed.xml`; drafts and archived posts remain unavailable publicly. See `docs/posts.md` for the lifecycle, tag, caching, and RSS model.
 
+## Projects and technologies
+
+Use `/admin/projects` to create, edit, preview, publish, archive, and delete portfolio projects. Reusable normalized technologies are managed at `/admin/projects/technologies`. Projects have a lifecycle state separate from CMS visibility, optional dates and external links, and a featured flag that prioritizes them on `/projects`. See `docs/projects.md` for the project lifecycle, relationships, caching, and media bridge.
+
 ## Validation
 
 ```bash
@@ -74,5 +78,6 @@ npm run build
 - `docs/pages.md` documents custom-page lifecycle, autosave isolation, the editor, and Markdown rendering.
 - `docs/navigation.md` documents destination integrity, public visibility, link behavior, and transactional ordering.
 - `docs/posts.md` documents post publishing, normalized tags, chronological archives, previews, and RSS.
+- `docs/projects.md` documents project publishing, lifecycle states, featured ordering, technologies, previews, and links.
 
 Do not begin a later milestone until the current milestone passes its required checks.

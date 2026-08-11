@@ -54,7 +54,9 @@ test("renders an intentional public not-found state", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Return to the homepage" })).toBeVisible();
 });
 
-test("protects private page previews from anonymous visitors", async ({ page }) => {
+test("protects private content previews from anonymous visitors", async ({ page }) => {
   await page.goto("/preview/pages/7fe4e8dd-8f22-4b9f-b19a-7cd4529f8d70");
+  await expect(page).toHaveURL(/\/login$/);
+  await page.goto("/preview/projects/7fe4e8dd-8f22-4b9f-b19a-7cd4529f8d70");
   await expect(page).toHaveURL(/\/login$/);
 });

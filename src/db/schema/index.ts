@@ -3,6 +3,7 @@ import {
   bigint,
   boolean,
   check,
+  date,
   index,
   integer,
   pgTable,
@@ -300,6 +301,72 @@ export const postTags = pgTable(
   (table) => [
     primaryKey({ columns: [table.postId, table.tagId], name: "post_tags_post_id_tag_id_pk" }),
     index("post_tags_tag_id_index").on(table.tagId),
+  ],
+);
+
+export const projects = pgTable(
+  "projects",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: text("title").notNull(),
+    slug: text("slug").notNull(),
+    summary: text("summary").default("").notNull(),
+    contentMarkdown: text("content_markdown").default("").notNull(),
+    draftMarkdown: text("draft_markdown"),
+    coverImageUrl: text("cover_image_url"),
+    githubUrl: text("github_url"),
+    demoUrl: text("demo_url"),
+    externalUrl: text("external_url"),
+    isFeatured: boolean("is_featured").default(false).notNull(),
+    projectStatus: text("project_status").default("planned").notNull(),
+    startedOn: date("started_on"),
+    endedOn: date("ended_on"),
+    status: text("status").default("draft").notNull(),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    seoTitle: text("seo_title"),
+    seoDescription: text("seo_description"),
+    canonicalUrl: text("canonical_url"),
+    ogImageUrl: text("og_image_url"),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("projects_slug_unique").on(table.slug),
+    index("projects_status_featured_index").on(table.status, table.isFeatured),
+    index("projects_status_published_at_index").on(table.status, table.publishedAt),
+    check("projects_title_check", sql`length(trim(${table.title})) > 0`),
+    check("projects_status_check", sql`${table.status} in ('draft', 'published', 'archived')`),
+    check("projects_project_status_check", sql`${table.projectStatus} in ('planned', 'active', 'completed', 'archived')`),
+    check("projects_published_at_check", sql`${table.status} <> 'published' or ${table.publishedAt} is not null`),
+    check("projects_date_range_check", sql`${table.endedOn} is null or ${table.startedOn} is null or ${table.endedOn} >= ${table.startedOn}`),
+  ],
+);
+
+export const technologies = pgTable(
+  "technologies",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("technologies_name_unique").on(sql`lower(${table.name})`),
+    uniqueIndex("technologies_slug_unique").on(table.slug),
+    check("technologies_name_check", sql`length(trim(${table.name})) > 0`),
+  ],
+);
+
+export const projectTechnologies = pgTable(
+  "project_technologies",
+  {
+    projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+    technologyId: uuid("technology_id").notNull().references(() => technologies.id, { onDelete: "cascade" }),
+    sortOrder: integer("sort_order").default(0).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.projectId, table.technologyId], name: "project_technologies_project_id_technology_id_pk" }),
+    index("project_technologies_technology_id_index").on(table.technologyId),
+    check("project_technologies_sort_order_check", sql`${table.sortOrder} >= 0`),
   ],
 );
 

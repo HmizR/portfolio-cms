@@ -494,6 +494,10 @@ created_at
 updated_at
 ```
 
+Milestone 7 implements `projects` with the same canonical/private-draft Markdown boundary as pages and posts. CMS publication status is independent from the checked project lifecycle (`planned`, `active`, `completed`, `archived`). PostgreSQL checks require a publication timestamp for public rows and reject inverted optional date ranges. Featured state affects public index ordering but does not bypass publication rules.
+
+Technologies are normalized with case-insensitive unique names and unique slugs. `project_technologies` uses stable IDs, cascading foreign keys, a composite primary key, and explicit non-negative ordering. Project content and its complete technology assignment are updated transactionally. Public project queries are cached behind a feature tag, ordered featured-first and then by recency, and invalidated by project and technology mutations. Validated external cover/social URLs remain a temporary bridge to Milestone 8 media relationships.
+
 ## Publications
 
 ```text

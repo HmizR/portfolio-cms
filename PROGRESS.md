@@ -2,7 +2,7 @@
 
 # PortfolioCMS — Development Progress
 
-Last updated: 2026-08-10
+Last updated: 2026-08-11
 
 This file is the persistent handoff document for ongoing implementation.
 
@@ -16,11 +16,11 @@ Do not use this file as a replacement for requirements or architecture documenta
 
 Current phase:
 
-**Milestone 6 complete / ready for Milestone 7**
+**Milestone 7 complete / ready for Milestone 8**
 
 Overall status:
 
-**The application foundation, responsive public shell, authentication, profile/settings, custom-page publishing, database-driven navigation, and chronological posts with normalized tags and RSS are implemented and validated. Milestone 7 has not started.**
+**The application foundation, responsive public shell, authentication, profile/settings, pages, navigation, posts/RSS, and featured portfolio projects with normalized technologies are implemented and validated. Milestone 8 has not started.**
 
 ---
 
@@ -81,6 +81,7 @@ Confirmed:
 - Full visual page builder is out of scope.
 - Post Markdown autosave is private and separate from canonical published content, matching the page publication boundary.
 - Tags are normalized rows related to posts by stable IDs and updated transactionally with post content.
+- Project lifecycle is independent from CMS publication state; project technologies are normalized and updated transactionally with project content.
 
 ---
 
@@ -305,21 +306,23 @@ Tasks:
 
 ## Milestone 7 — Projects
 
-Status: **Not started**
+Status: **Complete**
 
 Tasks:
 
-- [ ] Add projects schema
-- [ ] Add technologies schema
-- [ ] Add project_technologies schema
-- [ ] Add migrations
-- [ ] Implement project CRUD
-- [ ] Implement technologies
-- [ ] Implement project lifecycle status
-- [ ] Implement featured projects
-- [ ] Implement project index
-- [ ] Implement project detail
-- [ ] Add project tests
+- [x] Add projects schema
+- [x] Add technologies schema
+- [x] Add project_technologies schema
+- [x] Add migrations
+- [x] Implement project CRUD
+- [x] Implement technologies
+- [x] Implement project lifecycle status
+- [x] Implement featured projects
+- [x] Implement project index
+- [x] Implement project detail
+- [x] Add project tests
+- [x] Verify migration against development and isolated test databases
+- [x] Update projects, database, architecture, README, and progress documentation
 
 ---
 
@@ -478,22 +481,22 @@ Tasks:
 
 # 6. Current Task
 
-**Milestone 6 — Posts is complete. No implementation task is currently in progress.**
+**Milestone 7 — Projects is complete. No implementation task is currently in progress.**
 
-Completed post work:
+Completed project work:
 
-1. `posts` stores canonical and private-draft Markdown, lifecycle state, first publication time, excerpt, external cover/social image bridges, and content-specific SEO overrides.
-2. `tags` uses case-insensitive unique names and unique slugs; `post_tags` uses cascading UUID relationships and a composite primary key.
-3. `/admin/posts` provides CRUD and lifecycle management, while `/admin/posts/tags` provides tag create, rename, and delete behavior with usage counts.
-4. The shared CodeMirror editor now serves pages and posts. Post autosave remains private, preview requires authentication, and every mutation independently authenticates and validates its inputs.
-5. Post content and complete tag assignments update transactionally. Draft and archived posts are excluded from all public reads.
-6. `/posts` presents published posts chronologically by year, and `/posts/[slug]` uses the shared Markdown renderer and restrained public shell.
-7. `/feed.xml` emits escaped RSS 2.0 with absolute links, publication dates, excerpts, and categories for published posts only.
-8. Public post reads share targeted cache invalidation across archive, detail, RSS, lifecycle, and tag changes.
-9. The admin overview now reports current page, post, and draft counts with recent content and page/post quick actions.
-10. Unit tests cover post validation and RSS encoding. Playwright covers tag CRUD, slug conflicts, autosave isolation, secure preview, publish, archive/detail/RSS visibility, and cascade cleanup.
+1. `projects` stores summary, canonical/private Markdown, checked CMS and project lifecycle states, featured state, optional dates, validated external links, cover/social image bridges, and content SEO overrides.
+2. Database checks enforce project lifecycle values, public publication timestamps, valid date ordering, and unique slugs.
+3. `technologies` uses case-insensitive unique names and unique slugs; `project_technologies` uses cascading UUID relationships, a composite primary key, and non-negative ordering.
+4. `/admin/projects` provides CRUD and CMS lifecycle management. `/admin/projects/technologies` provides technology create, rename, delete, conflict handling, and usage counts.
+5. The shared CodeMirror and Markdown pipeline now serves projects. Autosave remains private, previews require authentication, and every mutation independently authenticates and validates input.
+6. Project content and complete technology assignments update transactionally. Draft and CMS-archived projects are excluded from public reads regardless of project lifecycle status.
+7. `/projects` renders a restrained featured-first, recency-aware project index; `/projects/[slug]` renders lifecycle, dates, technologies, safe external links, and Markdown.
+8. Public project reads share targeted cache invalidation across index, detail, lifecycle, and technology changes.
+9. The admin overview now includes project count, featured project count, projects in draft totals/recent content, and a project quick action.
+10. Unit tests cover lifecycle/date/URL/relationship validation. Playwright covers technology CRUD/conflicts, project slug conflicts, autosave isolation, secure preview, featured ordering, project/CMS lifecycle independence, links, archive removal, and cascade cleanup.
 
-Next recommended task: **Milestone 7 — Projects**. It has not been started.
+Next recommended task: **Milestone 8 — Media**. It has not been started.
 
 ---
 
@@ -655,6 +658,23 @@ Milestone 6 — 2026-08-10
 - Container image build: UNAVAILABLE because Docker Desktop's BuildKit worker returned `DeadlineExceeded`; a legacy-builder retry also stalled and was terminated without changing running services
 - `npm audit --omit=dev`: 5 moderate tooling-only esbuild advisories through Drizzle Kit; npm still offers only a breaking Drizzle Kit downgrade as an automated fix
 
+Milestone 7 — 2026-08-11
+
+- `npm run lint`: PASS
+- `npm run typecheck`: PASS
+- `npm run test`: PASS (14 files, 27 tests; project coverage includes optional-field normalization, exact calendar dates, date ranges, safe URLs, lifecycle values, technology slugs, and unique assignments)
+- Focused project/authentication Playwright flow: PASS
+- `npm run test:e2e`: PASS (5 Chromium tests; the serial flow covers technology create/rename/conflict/delete, project slug conflicts, CodeMirror autosave, explicit draft save, secure preview, publish, featured-first ordering, lifecycle/date/link rendering, public autosave isolation, archive, delete, and relationship cleanup)
+- `npm run build`: PASS (all admin/public project routes and the protected project preview compile as dynamic routes)
+- `npm run db:generate`: PASS (`drizzle/0006_medical_war_machine.sql`; final schema check reports no further changes)
+- `npm run db:migrate`: PASS against the development PostgreSQL service
+- Isolated Playwright database creation, migration, and reset: PASS
+- `npm run db:check`: PASS against the healthy Compose PostgreSQL service
+- `docker compose config --quiet`: PASS (sandbox could not read the user Docker config, but Compose validation exited successfully)
+- Compose `postgres` and `storage` services: RUNNING and HEALTHY
+- Container image build: UNAVAILABLE because Docker Desktop's BuildKit worker again accepted the build without producing progress and the bounded retry was terminated; the production Next.js build passed independently
+- Dependency audit status is unchanged from Milestone 6 because this milestone added no packages
+
 ---
 
 # 11. Important Handoff Notes
@@ -666,7 +686,7 @@ Any future coding session should:
 3. Read `ARCHITECTURE.md`.
 4. Read this file.
 5. Inspect the repository before making changes.
-6. Begin Milestone 7 only when it is the requested scope.
+6. Begin Milestone 8 only when it is the requested scope.
 7. Avoid prematurely implementing later milestones.
 8. Update this file before ending meaningful work.
 
@@ -721,7 +741,7 @@ Milestone 5 handoff decisions:
 - Preserve both native drag-and-drop and explicit up/down controls; the latter is the keyboard-accessible ordering path.
 - Keep public navigation reads behind `getPublicNavigation()` and its cache tag. Navigation mutations and relevant page lifecycle changes must invalidate that tag.
 - Page deletion intentionally cascades its page navigation items. Other destination types do not depend on future content tables yet.
-- Built-in posts/projects/publications/CV links may be configured before those routes ship, but their route implementation remains owned by Milestones 6, 7, 9, and 10 respectively.
+- Built-in posts and projects destinations are live. Publications and CV links may be configured before those routes ship in Milestones 9 and 10.
 
 Milestone 6 handoff decisions:
 
@@ -731,4 +751,15 @@ Milestone 6 handoff decisions:
 - Keep public post reads behind `PUBLIC_POSTS_CACHE_TAG`; lifecycle, slug, content, and tag changes must invalidate the archive, details, and RSS.
 - Keep `/feed.xml` limited to published posts and generate absolute links from the centrally validated `APP_URL`.
 - Cover and social image URLs are temporary Milestone 6 bridges. Milestone 8 should replace them with media IDs through the storage abstraction.
-- The posts built-in navigation destination is now live. Projects, publications, and CV routes remain owned by their later milestones.
+- The posts built-in navigation destination is live. Projects are now live through Milestone 7; publications and CV remain owned by later milestones.
+
+Milestone 7 handoff decisions:
+
+- Keep project lifecycle (`planned`, `active`, `completed`, `archived`) independent from CMS publication status (`draft`, `published`, `archived`).
+- Keep project autosave isolated in `draft_markdown` and projects on the shared editor/Markdown renderer.
+- Keep technologies normalized, relationships ID-based, and complete assignment replacement in the same transaction as project updates.
+- Preserve non-negative `project_technologies.sort_order`, even though the current selection UI uses stable alphabetical checkbox order rather than drag reordering.
+- Keep public project reads behind `PUBLIC_PROJECTS_CACHE_TAG` and preserve featured-first then recency ordering.
+- Keep GitHub, demo, and external project URLs limited to validated HTTP(S) links rendered with safe new-tab attributes.
+- Project cover and social image URLs are Milestone 7 bridges. Milestone 8 should migrate them to media IDs through the storage abstraction.
+- The projects built-in navigation destination is now live. Publications and CV routes remain owned by Milestones 9 and 10.

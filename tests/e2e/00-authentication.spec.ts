@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe.configure({ mode: "serial" });
 
 test("completes setup, protects admin routes, and supports login and logout", async ({ page }) => {
-  test.setTimeout(420_000);
+  test.setTimeout(600_000);
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/setup$/);
   await expect(page.getByRole("heading", { name: "Create your administrator" })).toBeVisible();
@@ -277,6 +277,119 @@ test("completes setup, protects admin routes, and supports login and logout", as
   page.once("dialog", (dialog) => dialog.accept());
   await tagForm.getByRole("button", { name: "Delete" }).click();
   await expect(page.getByRole("heading", { name: "No tags yet" })).toBeVisible();
+
+  await page.goto("/admin/projects");
+  await expect(page.getByRole("heading", { name: "No projects yet" })).toBeVisible();
+  await page.getByRole("link", { name: "Manage technologies" }).click();
+  const createTechnologyForm = page.getByRole("form", { name: "Create technology" });
+  await createTechnologyForm.getByLabel("Name").fill("TypeScript");
+  await createTechnologyForm.getByRole("button", { name: "Create technology" }).click();
+  await expect(page.getByRole("form", { name: "Edit TypeScript" })).toBeVisible();
+
+  let technologyForm = page.getByRole("form", { name: "Edit TypeScript" });
+  await technologyForm.getByLabel("Name").fill("Responsible TypeScript");
+  await technologyForm.getByLabel("Slug").fill("responsible-typescript");
+  await technologyForm.getByRole("button", { name: "Save" }).click();
+  technologyForm = page.getByRole("form", { name: "Edit Responsible TypeScript" });
+  await expect(technologyForm.getByText("Technology saved.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("form", { name: "Edit Responsible TypeScript" })).toBeVisible();
+
+  await createTechnologyForm.getByLabel("Name").fill("Responsible TypeScript");
+  await createTechnologyForm.getByLabel("Slug").fill("different-slug");
+  await createTechnologyForm.getByRole("button", { name: "Create technology" }).click();
+  await expect(page.getByText("A technology already uses this name or slug.")).toBeVisible();
+
+  await page.goto("/admin/projects/new");
+  await page.getByLabel("Title").fill("Civic AI Lab");
+  await page.getByRole("button", { name: "Create draft" }).click();
+  await expect(page).toHaveURL(/\/admin\/projects\/[0-9a-f-]+$/, { timeout: 60_000 });
+  const editFeaturedProjectUrl = page.url();
+  const projectPreviewHref = await page.getByRole("link", { name: /Preview public layout/ }).getAttribute("href");
+  expect(projectPreviewHref).toMatch(/^\/preview\/projects\/[0-9a-f-]+$/);
+  if (!projectPreviewHref) throw new Error("Project preview link is missing.");
+
+  await page.goto("/admin/projects/new");
+  await page.getByLabel("Title").fill("Duplicate civic project");
+  await page.getByLabel("Slug").fill("civic-ai-lab");
+  await page.getByRole("button", { name: "Create draft" }).click();
+  await expect(page.getByText("A project already uses this slug.")).toBeVisible();
+
+  await page.goto(editFeaturedProjectUrl);
+  await page.getByLabel("Summary").fill("Participatory research tools for accountable public-interest AI.");
+  await page.getByLabel("Project lifecycle").selectOption("active");
+  await page.getByLabel("Featured project").check();
+  await page.getByLabel("Start date").fill("2025-01-15");
+  await page.getByLabel("GitHub URL").fill("https://github.com/example/civic-ai-lab");
+  await page.getByLabel("Demo URL").fill("https://demo.example.com/civic-ai-lab");
+  await page.getByLabel("External URL").fill("https://example.com/civic-ai-lab");
+  await page.getByLabel("Responsible TypeScript").check();
+  await page.locator(".cm-content").fill("# Participatory infrastructure\n\nThe lab builds **auditable tools** with community partners.");
+  await expect(page.getByText(/^Saved \d/)).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("Project saved.")).toBeVisible();
+  expect((await page.request.get("/projects/civic-ai-lab")).status()).toBe(404);
+  await page.goto(projectPreviewHref);
+  await expect(page.getByText(/Private preview · draft/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Participatory infrastructure" })).toBeVisible();
+  await expect(page.getByText("Responsible TypeScript")).toBeVisible();
+  await expect(page.getByText(/Project · active/)).toBeVisible();
+
+  await page.goto(editFeaturedProjectUrl);
+  await page.getByRole("button", { name: "Publish" }).click();
+  await expect(page.getByText("Project published.")).toBeVisible();
+
+  await page.goto("/admin/projects/new");
+  await page.getByLabel("Title").fill("Archive Toolkit");
+  await page.getByRole("button", { name: "Create draft" }).click();
+  await expect(page).toHaveURL(/\/admin\/projects\/[0-9a-f-]+$/, { timeout: 60_000 });
+  const editRegularProjectUrl = page.url();
+  await page.getByLabel("Summary").fill("A compact tool for preserving research artifacts.");
+  await page.getByLabel("Project lifecycle").selectOption("completed");
+  await page.getByLabel("Start date").fill("2026-01-01");
+  await page.getByLabel("End date").fill("2026-05-01");
+  await page.getByRole("button", { name: "Publish" }).click();
+  await expect(page.getByText("Project published.")).toBeVisible();
+
+  await page.goto("/projects");
+  await expect(page.getByRole("heading", { name: "Projects", exact: true })).toBeVisible();
+  await expect(page.locator("ol > li").first().getByRole("link", { name: "Civic AI Lab" })).toBeVisible();
+  await expect(page.locator("ol > li").nth(1).getByRole("link", { name: "Archive Toolkit" })).toBeVisible();
+  await page.getByRole("link", { name: "Civic AI Lab" }).click();
+  await expect(page.getByRole("heading", { name: "Participatory infrastructure" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Source/ })).toHaveAttribute("target", "_blank");
+  await expect(page.getByRole("link", { name: /Demo/ })).toHaveAttribute("rel", "noopener noreferrer");
+  await expect(page.getByText("Responsible TypeScript")).toBeVisible();
+
+  await page.goto(editFeaturedProjectUrl);
+  await page.locator(".cm-content").fill("# Private project autosave\n\nThis is not public yet.");
+  await expect(page.getByText(/^Saved \d/)).toBeVisible({ timeout: 30_000 });
+  await page.goto("/projects/civic-ai-lab");
+  await expect(page.getByRole("heading", { name: "Participatory infrastructure" })).toBeVisible();
+  await expect(page.getByText("This is not public yet.")).toHaveCount(0);
+
+  await page.goto(editFeaturedProjectUrl);
+  await page.getByRole("button", { name: "Archive" }).click();
+  await expect(page.getByText("Project archived.")).toBeVisible();
+  expect((await page.request.get("/projects/civic-ai-lab")).status()).toBe(404);
+  await page.goto("/projects");
+  await expect(page.getByRole("link", { name: "Civic AI Lab" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Archive Toolkit" })).toBeVisible();
+
+  await page.goto(editFeaturedProjectUrl);
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Delete project" }).click();
+  await expect(page).toHaveURL(/\/admin\/projects$/);
+  await page.goto(editRegularProjectUrl);
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Delete project" }).click();
+  await expect(page.getByRole("heading", { name: "No projects yet" })).toBeVisible();
+  await page.goto("/admin/projects/technologies");
+  technologyForm = page.getByRole("form", { name: "Edit Responsible TypeScript" });
+  await expect(technologyForm.getByText("Used by 0 projects.")).toBeVisible();
+  page.once("dialog", (dialog) => dialog.accept());
+  await technologyForm.getByRole("button", { name: "Delete" }).click();
+  await expect(page.getByRole("heading", { name: "No technologies yet" })).toBeVisible();
 
   await page.goto("/setup");
   await expect(page).toHaveURL(/\/admin$/);

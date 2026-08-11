@@ -1,0 +1,5 @@
+import type { Metadata } from "next";
+import { listTechnologies } from "@/features/projects/queries";
+import { CreateTechnologyForm, TechnologyEditor } from "@/features/projects/technology-manager";
+export const metadata: Metadata = { title: "Technologies | PortfolioCMS" };
+export default async function TechnologiesPage() { const technologies = await listTechnologies(); return <div className="mx-auto max-w-5xl"><p className="text-sm font-semibold uppercase tracking-[0.14em] text-teal-800">Projects</p><h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight">Technologies</h1><p className="mb-8 mt-2 text-slate-600">Keep project technologies normalized and reusable.</p><CreateTechnologyForm />{technologies.length === 0 ? <div className="mt-8 rounded-xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center"><h2 className="font-serif text-xl font-semibold">No technologies yet</h2></div> : <div className="mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">{technologies.map((technology) => <TechnologyEditor key={technology.id} technology={technology} />)}</div>}</div>; }
