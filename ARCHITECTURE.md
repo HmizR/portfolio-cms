@@ -465,6 +465,10 @@ created_at
 updated_at
 ```
 
+Milestone 6 follows the page publication boundary: `content_markdown` is canonical, nullable `draft_markdown` is the authenticated autosave buffer, and explicit save/lifecycle actions promote it. `published_at` records first publication, and a database check prevents a published post without that timestamp. Until Milestone 8, cover and Open Graph images use validated external URL bridges rather than premature media/storage coupling.
+
+Tags are normalized with case-insensitive unique names and unique slugs. `post_tags` uses a composite primary key and cascading ID relationships. Post content and complete tag assignment replacement are written transactionally. Public post reads are cached behind one tag, ordered by publication time, normalized after cache serialization, and invalidated together with `/posts`, affected detail paths, and `/feed.xml`.
+
 ## Projects
 
 ```text

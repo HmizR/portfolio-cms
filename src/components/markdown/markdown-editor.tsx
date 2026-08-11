@@ -7,17 +7,20 @@ import { basicSetup } from "codemirror";
 import { Bold, Code2, Columns2, Expand, Eye, Heading2, Image, Italic, Link, List, Minimize2, Pilcrow } from "lucide-react";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import { MarkdownContent } from "@/components/markdown/markdown-content";
-import { autosavePageAction, renderMarkdownPreviewAction } from "@/features/pages/actions";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type EditorMode = "markdown" | "preview" | "split";
+type AutosaveResult = { ok: true; savedAt: string } | { ok: false; message: string };
+type PreviewResult = { ok: true; html: string } | { ok: false; message: string };
 
 interface MarkdownEditorProps {
+  autosaveAction: (input: unknown) => Promise<AutosaveResult>;
+  contentId: string;
   initialPreviewHtml: string;
   onChange: (markdown: string) => void;
-  pageId: string;
+  previewAction: (markdown: unknown) => Promise<PreviewResult>;
   value: string;
 }
 
@@ -31,7 +34,7 @@ const toolbarItems = [
   { label: "Code", icon: Code2, before: "```text\n", after: "\n```" },
 ] as const;
 
-export function MarkdownEditor({ initialPreviewHtml, onChange, pageId, value }: MarkdownEditorProps) {
+export function MarkdownEditor({ autosaveAction, contentId, initialPreviewHtml, onChange, previewAction, value }: MarkdownEditorProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const initialValueRef = useRef(value);
@@ -84,7 +87,7 @@ export function MarkdownEditor({ initialPreviewHtml, onChange, pageId, value }: 
     setAutosaveStatus("Unsaved changes");
     const timeout = window.setTimeout(async () => {
       setAutosaveStatus("Saving...");
-      const result = await autosavePageAction({ id: pageId, contentMarkdown: value });
+      const result = await autosaveAction({ id: contentId, contentMarkdown: value });
       if (result.ok) {
         lastSavedRef.current = value;
         setAutosaveStatus(`Saved ${new Date(result.savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
@@ -93,16 +96,16 @@ export function MarkdownEditor({ initialPreviewHtml, onChange, pageId, value }: 
       }
     }, 1200);
     return () => window.clearTimeout(timeout);
-  }, [pageId, value]);
+  }, [autosaveAction, contentId, value]);
 
   useEffect(() => {
     if (mode === "markdown") return;
     const timeout = window.setTimeout(async () => {
-      const result = await renderMarkdownPreviewAction(value);
+      const result = await previewAction(value);
       if (result.ok) setPreviewHtml(result.html);
     }, 250);
     return () => window.clearTimeout(timeout);
-  }, [mode, value]);
+  }, [mode, previewAction, value]);
 
   function insertMarkdown(before: string, after: string) {
     const view = viewRef.current;

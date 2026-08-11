@@ -6,6 +6,7 @@ import {
   index,
   integer,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -238,6 +239,67 @@ export const navigationItems = pgTable(
         or (${table.type} in ('posts', 'projects', 'publications', 'cv') and ${table.pageId} is null and ${table.url} is null)
       )`,
     ),
+  ],
+);
+
+export const posts = pgTable(
+  "posts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: text("title").notNull(),
+    slug: text("slug").notNull(),
+    excerpt: text("excerpt").default("").notNull(),
+    contentMarkdown: text("content_markdown").default("").notNull(),
+    draftMarkdown: text("draft_markdown"),
+    coverImageUrl: text("cover_image_url"),
+    status: text("status").default("draft").notNull(),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    seoTitle: text("seo_title"),
+    seoDescription: text("seo_description"),
+    canonicalUrl: text("canonical_url"),
+    ogImageUrl: text("og_image_url"),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("posts_slug_unique").on(table.slug),
+    index("posts_status_published_at_index").on(table.status, table.publishedAt),
+    check("posts_title_check", sql`length(trim(${table.title})) > 0`),
+    check("posts_status_check", sql`${table.status} in ('draft', 'published', 'archived')`),
+    check(
+      "posts_published_at_check",
+      sql`${table.status} <> 'published' or ${table.publishedAt} is not null`,
+    ),
+  ],
+);
+
+export const tags = pgTable(
+  "tags",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("tags_name_unique").on(sql`lower(${table.name})`),
+    uniqueIndex("tags_slug_unique").on(table.slug),
+    check("tags_name_check", sql`length(trim(${table.name})) > 0`),
+  ],
+);
+
+export const postTags = pgTable(
+  "post_tags",
+  {
+    postId: uuid("post_id")
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.postId, table.tagId], name: "post_tags_post_id_tag_id_pk" }),
+    index("post_tags_tag_id_index").on(table.tagId),
   ],
 );
 

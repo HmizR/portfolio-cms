@@ -2,7 +2,7 @@
 
 # PortfolioCMS — Development Progress
 
-Last updated: 2026-08-09
+Last updated: 2026-08-10
 
 This file is the persistent handoff document for ongoing implementation.
 
@@ -16,11 +16,11 @@ Do not use this file as a replacement for requirements or architecture documenta
 
 Current phase:
 
-**Milestone 5 complete / ready for Milestone 6**
+**Milestone 6 complete / ready for Milestone 7**
 
 Overall status:
 
-**The application foundation, responsive public shell, authentication, profile/settings, custom-page publishing, and database-driven navigation are implemented and validated. Milestone 6 has not started.**
+**The application foundation, responsive public shell, authentication, profile/settings, custom-page publishing, database-driven navigation, and chronological posts with normalized tags and RSS are implemented and validated. Milestone 7 has not started.**
 
 ---
 
@@ -79,6 +79,8 @@ Confirmed:
 - Scheduled publishing is future work.
 - Raw HTML in Markdown is disabled by default.
 - Full visual page builder is out of scope.
+- Post Markdown autosave is private and separate from canonical published content, matching the page publication boundary.
+- Tags are normalized rows related to posts by stable IDs and updated transactionally with post content.
 
 ---
 
@@ -280,22 +282,24 @@ Completion checks:
 
 ## Milestone 6 — Posts
 
-Status: **Not started**
+Status: **Complete**
 
 Tasks:
 
-- [ ] Add posts schema
-- [ ] Add tags schema
-- [ ] Add post_tags schema
-- [ ] Add migrations
-- [ ] Implement post CRUD
-- [ ] Implement tag management
-- [ ] Implement post editor
-- [ ] Implement post archive
-- [ ] Implement post detail
-- [ ] Implement chronological presentation
-- [ ] Implement RSS feed
-- [ ] Add post tests
+- [x] Add posts schema
+- [x] Add tags schema
+- [x] Add post_tags schema
+- [x] Add migrations
+- [x] Implement post CRUD
+- [x] Implement tag management
+- [x] Implement post editor
+- [x] Implement post archive
+- [x] Implement post detail
+- [x] Implement chronological presentation
+- [x] Implement RSS feed
+- [x] Add post tests
+- [x] Verify migration against development and isolated test databases
+- [x] Update posts, database, architecture, README, and progress documentation
 
 ---
 
@@ -474,21 +478,22 @@ Tasks:
 
 # 6. Current Task
 
-**Milestone 5 — Navigation is complete. No implementation task is currently in progress.**
+**Milestone 6 — Posts is complete. No implementation task is currently in progress.**
 
-Completed navigation work:
+Completed post work:
 
-1. `navigation_items` stores labels, finite destination types, page relationships, external URLs, visibility, new-tab behavior, and persistent non-negative sort positions.
-2. Database checks enforce mutually exclusive page/external/system destination shapes; page relationships use IDs and cascade on page deletion.
-3. `/admin/navigation` provides create, edit, delete, visibility, and new-tab controls for page, posts, projects, publications, CV, and external destinations.
-4. Native drag-and-drop and explicit Move up/Move down buttons share a complete-list reorder action. The server validates set equality and persists contiguous positions transactionally.
-5. Deletion compacts ordering transactionally, and every mutation independently authenticates and validates untrusted input.
-6. Every public shell now reads ordered visible navigation from PostgreSQL; the temporary fixture module was removed.
-7. Page destinations resolve the current slug from the stable page ID and are omitted unless the target page is published. Page lifecycle changes invalidate the navigation cache.
-8. External new-tab links render with `noopener noreferrer`; an empty navigation set omits desktop and mobile menu controls.
-9. Unit tests cover destination shapes, unsafe URLs, duplicate reorder IDs, system mapping, and publication visibility. Playwright now maintains the full create-page-to-navbar critical flow, including drag/keyboard order, hide/show, archive removal, and cascade cleanup.
+1. `posts` stores canonical and private-draft Markdown, lifecycle state, first publication time, excerpt, external cover/social image bridges, and content-specific SEO overrides.
+2. `tags` uses case-insensitive unique names and unique slugs; `post_tags` uses cascading UUID relationships and a composite primary key.
+3. `/admin/posts` provides CRUD and lifecycle management, while `/admin/posts/tags` provides tag create, rename, and delete behavior with usage counts.
+4. The shared CodeMirror editor now serves pages and posts. Post autosave remains private, preview requires authentication, and every mutation independently authenticates and validates its inputs.
+5. Post content and complete tag assignments update transactionally. Draft and archived posts are excluded from all public reads.
+6. `/posts` presents published posts chronologically by year, and `/posts/[slug]` uses the shared Markdown renderer and restrained public shell.
+7. `/feed.xml` emits escaped RSS 2.0 with absolute links, publication dates, excerpts, and categories for published posts only.
+8. Public post reads share targeted cache invalidation across archive, detail, RSS, lifecycle, and tag changes.
+9. The admin overview now reports current page, post, and draft counts with recent content and page/post quick actions.
+10. Unit tests cover post validation and RSS encoding. Playwright covers tag CRUD, slug conflicts, autosave isolation, secure preview, publish, archive/detail/RSS visibility, and cascade cleanup.
 
-Next recommended task: **Milestone 6 — Posts**. It has not been started.
+Next recommended task: **Milestone 7 — Projects**. It has not been started.
 
 ---
 
@@ -496,6 +501,7 @@ Next recommended task: **Milestone 6 — Posts**. It has not been started.
 
 - `npm audit --omit=dev` reports five moderate development-server advisories through Drizzle Kit's deprecated nested `@esbuild-kit`/esbuild dependency. Better Auth's optional Drizzle Kit peer makes npm include the tooling path in the omit-dev report; the vulnerable package is not used by the production application runtime, and npm offers only a breaking Drizzle Kit downgrade as an automated fix.
 - The host currently uses Node.js 20.12.2, below the dependency toolchain's declared Node.js 20.19 minimum. Validation passes on the host, while the production Dockerfile uses Node.js 22.
+- Docker Desktop's BuildKit worker returned `DeadlineExceeded` during the Milestone 6 container-image verification. Compose configuration and the running PostgreSQL/storage services remain healthy, but both BuildKit and legacy image-build attempts stalled until their bounded timeouts. Retry the image build after restarting Docker Desktop; do not treat this host builder condition as an application build failure.
 
 ---
 
@@ -632,6 +638,23 @@ Milestone 5 — 2026-08-09
 - In-app browser manual inspection: UNAVAILABLE because browser discovery and its recovery guidance both timed out; the complete standalone Playwright desktop/mobile rendering and interaction suite passed
 - `npm audit --omit=dev`: 5 moderate tooling-only esbuild advisories through Drizzle Kit; npm still offers only a breaking Drizzle Kit downgrade as an automated fix
 
+Milestone 6 — 2026-08-10
+
+- `npm run lint`: PASS
+- `npm run typecheck`: PASS
+- `npm run test`: PASS (13 files, 25 tests; post coverage includes optional-field normalization, unsafe URL rejection, tag uniqueness validation, XML escaping, absolute RSS links, dates, and categories)
+- Focused post/authentication Playwright flow: PASS
+- `npm run test:e2e`: PASS (5 Chromium tests; the serial flow covers tag create/rename/conflict/delete, post slug conflicts, CodeMirror autosave, explicit draft save, secure preview, publish, chronological archive/detail rendering, RSS inclusion/removal, public autosave isolation, archive, delete, and relationship cleanup)
+- `npm run build`: PASS (all admin/public post routes, protected preview, and `/feed.xml` compile as dynamic routes)
+- `npm run db:generate`: PASS (`drizzle/0005_true_marauders.sql`; final schema check reports no further changes)
+- `npm run db:migrate`: PASS against the development PostgreSQL service
+- Isolated Playwright database creation, migration, and reset: PASS
+- `npm run db:check`: PASS against the healthy Compose PostgreSQL service
+- `docker compose config --quiet`: PASS (sandbox could not read the user Docker config, but Compose validation exited successfully)
+- Compose `postgres` and `storage` services: RUNNING and HEALTHY
+- Container image build: UNAVAILABLE because Docker Desktop's BuildKit worker returned `DeadlineExceeded`; a legacy-builder retry also stalled and was terminated without changing running services
+- `npm audit --omit=dev`: 5 moderate tooling-only esbuild advisories through Drizzle Kit; npm still offers only a breaking Drizzle Kit downgrade as an automated fix
+
 ---
 
 # 11. Important Handoff Notes
@@ -643,7 +666,7 @@ Any future coding session should:
 3. Read `ARCHITECTURE.md`.
 4. Read this file.
 5. Inspect the repository before making changes.
-6. Begin Milestone 6 only when it is the requested scope.
+6. Begin Milestone 7 only when it is the requested scope.
 7. Avoid prematurely implementing later milestones.
 8. Update this file before ending meaningful work.
 
@@ -699,3 +722,13 @@ Milestone 5 handoff decisions:
 - Keep public navigation reads behind `getPublicNavigation()` and its cache tag. Navigation mutations and relevant page lifecycle changes must invalidate that tag.
 - Page deletion intentionally cascades its page navigation items. Other destination types do not depend on future content tables yet.
 - Built-in posts/projects/publications/CV links may be configured before those routes ship, but their route implementation remains owned by Milestones 6, 7, 9, and 10 respectively.
+
+Milestone 6 handoff decisions:
+
+- Keep post autosave isolated in `draft_markdown`; it must never change canonical public content or publication state.
+- Keep pages and posts on the shared CodeMirror component and the single `src/lib/markdown/render.ts` rendering pipeline.
+- Keep tag names normalized as rows, relationships ID-based, and complete assignment changes in the same transaction as post updates.
+- Keep public post reads behind `PUBLIC_POSTS_CACHE_TAG`; lifecycle, slug, content, and tag changes must invalidate the archive, details, and RSS.
+- Keep `/feed.xml` limited to published posts and generate absolute links from the centrally validated `APP_URL`.
+- Cover and social image URLs are temporary Milestone 6 bridges. Milestone 8 should replace them with media IDs through the storage abstraction.
+- The posts built-in navigation destination is now live. Projects, publications, and CV routes remain owned by their later milestones.

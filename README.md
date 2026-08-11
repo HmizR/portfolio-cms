@@ -1,6 +1,6 @@
 # PortfolioCMS
 
-PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, database-backed profile/settings, custom Markdown pages, and dynamic navigation.
+PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, database-backed profile/settings, custom Markdown pages, dynamic navigation, and chronological posts with tags and RSS.
 
 ## Foundation stack
 
@@ -46,6 +46,10 @@ Use `/admin/pages` to create, edit, preview, publish, archive, and delete custom
 
 Use `/admin/navigation` to add page, built-in, or external links; control visibility and new-tab behavior; and reorder items with drag-and-drop or accessible arrow controls. The public header reads only ordered visible items from PostgreSQL and automatically omits page links whose target is not published.
 
+## Posts and tags
+
+Use `/admin/posts` to create, edit, preview, publish, archive, and delete posts. Reusable normalized tags are managed at `/admin/posts/tags`. Published posts appear chronologically at `/posts`, resolve at `/posts/[slug]`, and are included in `/feed.xml`; drafts and archived posts remain unavailable publicly. See `docs/posts.md` for the lifecycle, tag, caching, and RSS model.
+
 ## Validation
 
 ```bash
@@ -69,5 +73,6 @@ npm run build
 - `docs/profile-settings.md` documents profile, social-link, site-identity, and appearance settings.
 - `docs/pages.md` documents custom-page lifecycle, autosave isolation, the editor, and Markdown rendering.
 - `docs/navigation.md` documents destination integrity, public visibility, link behavior, and transactional ordering.
+- `docs/posts.md` documents post publishing, normalized tags, chronological archives, previews, and RSS.
 
 Do not begin a later milestone until the current milestone passes its required checks.

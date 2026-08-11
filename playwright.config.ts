@@ -23,6 +23,6 @@ export default defineConfig({
     command: "tsx scripts/start-e2e-server.ts",
     url: "http://127.0.0.1:3100/api/health",
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 240_000,
   },
 });

@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe.configure({ mode: "serial" });
 
 test("completes setup, protects admin routes, and supports login and logout", async ({ page }) => {
-  test.setTimeout(300_000);
+  test.setTimeout(420_000);
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/setup$/);
   await expect(page.getByRole("heading", { name: "Create your administrator" })).toBeVisible();
@@ -183,6 +183,100 @@ test("completes setup, protects admin routes, and supports login and logout", as
   await page.goto("/admin/navigation");
   await expect(page.getByRole("form", { name: "Edit Hello" })).toHaveCount(0);
   await expect(page.getByRole("form", { name: "Edit Research Lab" })).toBeVisible();
+
+  await page.goto("/admin/posts");
+  await expect(page.getByRole("heading", { name: "No posts yet" })).toBeVisible();
+  await page.getByRole("link", { name: "Manage tags" }).click();
+  const createTagForm = page.getByRole("form", { name: "Create tag" });
+  await createTagForm.getByLabel("Name").fill("Research Notes");
+  await createTagForm.getByRole("button", { name: "Create tag" }).click();
+  await expect(page.getByRole("form", { name: "Edit Research Notes" })).toBeVisible();
+
+  let tagForm = page.getByRole("form", { name: "Edit Research Notes" });
+  await tagForm.getByLabel("Name").fill("Human AI");
+  await tagForm.getByLabel("Slug").fill("human-ai");
+  await tagForm.getByRole("button", { name: "Save" }).click();
+  tagForm = page.getByRole("form", { name: "Edit Human AI" });
+  await expect(tagForm.getByText("Tag saved.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("form", { name: "Edit Human AI" })).toBeVisible();
+
+  await createTagForm.getByLabel("Name").fill("Human AI");
+  await createTagForm.getByLabel("Slug").fill("another-slug");
+  await createTagForm.getByRole("button", { name: "Create tag" }).click();
+  await expect(page.getByText("A tag already uses this name or slug.")).toBeVisible();
+
+  await page.goto("/admin/posts/new");
+  await page.getByLabel("Title").fill("Learning with AI");
+  await page.getByRole("button", { name: "Create draft" }).click();
+  await expect(page).toHaveURL(/\/admin\/posts\/[0-9a-f-]+$/, { timeout: 60_000 });
+  const editPostUrl = page.url();
+  const postPreviewHref = await page.getByRole("link", { name: /Preview public layout/ }).getAttribute("href");
+  expect(postPreviewHref).toMatch(/^\/preview\/posts\/[0-9a-f-]+$/);
+  if (!postPreviewHref) throw new Error("Post preview link is missing.");
+
+  await page.goto("/admin/posts/new");
+  await page.getByLabel("Title").fill("Duplicate learning post");
+  await page.getByLabel("Slug").fill("learning-with-ai");
+  await page.getByRole("button", { name: "Create draft" }).click();
+  await expect(page.getByText("A post already uses this slug.")).toBeVisible();
+
+  await page.goto(editPostUrl);
+  await page.getByLabel("Excerpt").fill("A practical research note about thoughtful AI-assisted learning.");
+  await page.getByLabel("Human AI").check();
+  await page.locator(".cm-content").fill("# Learning deliberately\n\n**Reflection** matters when using intelligent tools.\n\n| Practice | Benefit |\n| --- | --- |\n| Question assumptions | Better judgment |");
+  await expect(page.getByText(/^Saved \d/)).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("Post saved.")).toBeVisible();
+  expect((await page.request.get("/posts/learning-with-ai")).status()).toBe(404);
+  await page.goto(postPreviewHref);
+  await expect(page.getByText(/Private preview · draft/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Learning deliberately" })).toBeVisible();
+  await expect(page.getByText("Human AI")).toBeVisible();
+
+  await page.goto(editPostUrl);
+  await page.getByRole("button", { name: "Publish" }).click();
+  await expect(page.getByText("Post published.")).toBeVisible();
+  await page.goto("/posts");
+  await expect(page.getByRole("heading", { name: "Posts", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Learning with AI" })).toBeVisible();
+  await expect(page.getByText("A practical research note about thoughtful AI-assisted learning.")).toBeVisible();
+  await page.getByRole("link", { name: "Learning with AI" }).click();
+  await expect(page.getByRole("heading", { name: "Learning with AI" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Learning deliberately" })).toBeVisible();
+  await expect(page.getByText("Human AI")).toBeVisible();
+
+  const publishedFeed = await page.request.get("/feed.xml");
+  expect(publishedFeed.status()).toBe(200);
+  expect(publishedFeed.headers()["content-type"]).toContain("application/rss+xml");
+  expect(await publishedFeed.text()).toContain("Learning with AI");
+
+  await page.goto(editPostUrl);
+  await page.locator(".cm-content").fill("# Private post autosave\n\nThis is not public yet.");
+  await expect(page.getByText(/^Saved \d/)).toBeVisible({ timeout: 30_000 });
+  await page.goto("/posts/learning-with-ai");
+  await expect(page.getByRole("heading", { name: "Learning deliberately" })).toBeVisible();
+  await expect(page.getByText("This is not public yet.")).toHaveCount(0);
+
+  await page.goto(editPostUrl);
+  await page.getByRole("button", { name: "Archive" }).click();
+  await expect(page.getByText("Post archived.")).toBeVisible();
+  expect((await page.request.get("/posts/learning-with-ai")).status()).toBe(404);
+  await page.goto("/posts");
+  await expect(page.getByRole("link", { name: "Learning with AI" })).toHaveCount(0);
+  expect(await (await page.request.get("/feed.xml")).text()).not.toContain("Learning with AI");
+
+  await page.goto(editPostUrl);
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Delete post" }).click();
+  await expect(page).toHaveURL(/\/admin\/posts$/);
+  await expect(page.getByRole("heading", { name: "No posts yet" })).toBeVisible();
+  await page.goto("/admin/posts/tags");
+  tagForm = page.getByRole("form", { name: "Edit Human AI" });
+  await expect(tagForm.getByText("Used by 0 posts.")).toBeVisible();
+  page.once("dialog", (dialog) => dialog.accept());
+  await tagForm.getByRole("button", { name: "Delete" }).click();
+  await expect(page.getByRole("heading", { name: "No tags yet" })).toBeVisible();
 
   await page.goto("/setup");
   await expect(page).toHaveURL(/\/admin$/);

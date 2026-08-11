@@ -7,8 +7,8 @@ import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { updatePageAction } from "@/features/pages/actions";
-import { MarkdownEditor } from "@/features/pages/markdown-editor";
+import { MarkdownEditor } from "@/components/markdown/markdown-editor";
+import { autosavePageAction, renderMarkdownPreviewAction, updatePageAction } from "@/features/pages/actions";
 import { FormField } from "@/features/profile/form-field";
 import type { PageActionState, PageFormInput, PageStatus } from "@/features/pages/validation";
 
@@ -56,7 +56,7 @@ function PageEditorFields({ action, initialPreviewHtml, page, pending, state, st
         </div>
       </section>
 
-      <div>{state.fieldErrors?.contentMarkdown?.map((error) => <p className="mb-2 text-sm text-red-700" key={error}>{error}</p>)}<MarkdownEditor initialPreviewHtml={initialPreviewHtml} onChange={setMarkdown} pageId={page.id} value={markdown} /></div>
+      <div>{state.fieldErrors?.contentMarkdown?.map((error) => <p className="mb-2 text-sm text-red-700" key={error}>{error}</p>)}<MarkdownEditor autosaveAction={autosavePageAction} contentId={page.id} initialPreviewHtml={initialPreviewHtml} onChange={setMarkdown} previewAction={renderMarkdownPreviewAction} value={markdown} /></div>
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <h2 className="font-serif text-xl font-semibold">Search and sharing</h2>
