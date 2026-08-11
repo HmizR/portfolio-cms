@@ -4,6 +4,7 @@ import { and, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { projects, projectTechnologies, technologies } from "@/db/schema";
 import type { ProjectRecord } from "@/features/projects/queries";
+import { assertImageMediaIds } from "@/features/media/service";
 import { projectPublicationStatusSchema, projectStatusSchema, type ProjectFormInput, type ProjectIntent } from "@/features/projects/validation";
 
 export class ProjectSlugConflictError extends Error { constructor() { super("A project already uses this slug."); this.name = "ProjectSlugConflictError"; } }
@@ -17,6 +18,7 @@ export async function createProject(input: { title: string; slug: string }): Pro
 }
 
 export async function updateProject(input: ProjectFormInput, intent: ProjectIntent): Promise<{ project: ProjectRecord; previousSlug: string }> {
+  await assertImageMediaIds([input.coverMediaId, input.ogMediaId]);
   await assertSlugAvailable(input.slug, input.id);
   return db.transaction(async (tx) => {
     const [current] = await tx.select().from(projects).where(eq(projects.id, input.id)).limit(1);
@@ -25,7 +27,7 @@ export async function updateProject(input: ProjectFormInput, intent: ProjectInte
     const nextStatus = intent === "save" ? projectPublicationStatusSchema.parse(current.status) : intent === "publish" ? "published" : intent === "archive" ? "archived" : intent;
     const publishedAt = nextStatus === "published" ? current.publishedAt ?? new Date() : nextStatus === "draft" ? null : current.publishedAt;
     let updated: typeof projects.$inferSelect | undefined;
-    try { [updated] = await tx.update(projects).set({ title: input.title, slug: input.slug, summary: input.summary, contentMarkdown: input.contentMarkdown, draftMarkdown: null, coverImageUrl: input.coverImageUrl, githubUrl: input.githubUrl, demoUrl: input.demoUrl, externalUrl: input.externalUrl, isFeatured: input.isFeatured, projectStatus: input.projectStatus, startedOn: input.startedOn, endedOn: input.endedOn, status: nextStatus, publishedAt, seoTitle: input.seoTitle, seoDescription: input.seoDescription, canonicalUrl: input.canonicalUrl, ogImageUrl: input.ogImageUrl, updatedAt: new Date() }).where(eq(projects.id, input.id)).returning(); } catch (error) { if (isUniqueViolation(error)) throw new ProjectSlugConflictError(); throw error; }
+    try { [updated] = await tx.update(projects).set({ title: input.title, slug: input.slug, summary: input.summary, contentMarkdown: input.contentMarkdown, draftMarkdown: null, coverMediaId: input.coverMediaId, coverImageUrl: input.coverImageUrl, githubUrl: input.githubUrl, demoUrl: input.demoUrl, externalUrl: input.externalUrl, isFeatured: input.isFeatured, projectStatus: input.projectStatus, startedOn: input.startedOn, endedOn: input.endedOn, status: nextStatus, publishedAt, seoTitle: input.seoTitle, seoDescription: input.seoDescription, canonicalUrl: input.canonicalUrl, ogMediaId: input.ogMediaId, ogImageUrl: input.ogImageUrl, updatedAt: new Date() }).where(eq(projects.id, input.id)).returning(); } catch (error) { if (isUniqueViolation(error)) throw new ProjectSlugConflictError(); throw error; }
     if (!updated) throw new Error("Project update did not return a project.");
     await tx.delete(projectTechnologies).where(eq(projectTechnologies.projectId, input.id));
     if (input.technologyIds.length) await tx.insert(projectTechnologies).values(input.technologyIds.map((technologyId, sortOrder) => ({ projectId: input.id, technologyId, sortOrder })));

@@ -1,9 +1,48 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+
+import { listMedia } from "@/features/media/queries";
 import { DeleteProjectForm } from "@/features/projects/delete-project-form";
 import { ProjectEditorForm } from "@/features/projects/project-editor-form";
 import { getProjectById, listTechnologies } from "@/features/projects/queries";
 import { projectIdSchema } from "@/features/projects/validation";
 import { renderMarkdown } from "@/lib/markdown/render";
+
 export const metadata: Metadata = { title: "Edit project | PortfolioCMS" };
-export default async function EditProjectPage({ params }: { params: Promise<{ id: string }> }) { const { id } = await params; const parsed = projectIdSchema.safeParse(id); if (!parsed.success) notFound(); const [project, technologies] = await Promise.all([getProjectById(parsed.data), listTechnologies()]); if (!project) notFound(); const contentMarkdown = project.draftMarkdown ?? project.contentMarkdown; const initialPreviewHtml = await renderMarkdown(contentMarkdown); const initialProject = { id: project.id, title: project.title, slug: project.slug, summary: project.summary, contentMarkdown, coverImageUrl: project.coverImageUrl, githubUrl: project.githubUrl, demoUrl: project.demoUrl, externalUrl: project.externalUrl, technologyIds: project.technologies.map((technology) => technology.id), isFeatured: project.isFeatured, projectStatus: project.projectStatus, startedOn: project.startedOn, endedOn: project.endedOn, seoTitle: project.seoTitle, seoDescription: project.seoDescription, canonicalUrl: project.canonicalUrl, ogImageUrl: project.ogImageUrl }; return <div className="mx-auto max-w-6xl"><div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold uppercase tracking-[0.14em] text-teal-800">Projects</p><h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight">Edit project</h1></div><DeleteProjectForm id={project.id} title={project.title} /></div><ProjectEditorForm availableTechnologies={technologies} initialPreviewHtml={initialPreviewHtml} initialProject={initialProject} initialStatus={project.status} /></div>; }
+
+export default async function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const parsed = projectIdSchema.safeParse(id);
+  if (!parsed.success) notFound();
+  const [project, technologies, availableMedia] = await Promise.all([
+    getProjectById(parsed.data),
+    listTechnologies(),
+    listMedia(),
+  ]);
+  if (!project) notFound();
+  const contentMarkdown = project.draftMarkdown ?? project.contentMarkdown;
+  const initialPreviewHtml = await renderMarkdown(contentMarkdown);
+  const initialProject = {
+    id: project.id,
+    title: project.title,
+    slug: project.slug,
+    summary: project.summary,
+    contentMarkdown,
+    coverMediaId: project.coverMediaId,
+    coverImageUrl: project.coverImageUrl,
+    githubUrl: project.githubUrl,
+    demoUrl: project.demoUrl,
+    externalUrl: project.externalUrl,
+    technologyIds: project.technologies.map((technology) => technology.id),
+    isFeatured: project.isFeatured,
+    projectStatus: project.projectStatus,
+    startedOn: project.startedOn,
+    endedOn: project.endedOn,
+    seoTitle: project.seoTitle,
+    seoDescription: project.seoDescription,
+    canonicalUrl: project.canonicalUrl,
+    ogMediaId: project.ogMediaId,
+    ogImageUrl: project.ogImageUrl,
+  };
+  return <div className="mx-auto max-w-6xl"><div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold uppercase tracking-[0.14em] text-teal-800">Projects</p><h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight">Edit project</h1></div><DeleteProjectForm id={project.id} title={project.title} /></div><ProjectEditorForm availableMedia={availableMedia} availableTechnologies={technologies} initialPreviewHtml={initialPreviewHtml} initialProject={initialProject} initialStatus={project.status} /></div>;
+}

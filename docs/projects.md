@@ -18,4 +18,4 @@ Technologies are normalized records with case-insensitive unique names and uniqu
 
 Published projects are ordered with featured projects first, then by start/publication recency. The index uses a restrained text-first presentation and exposes project lifecycle, dates, and technologies. The detail page renders Markdown and validated GitHub, demo, and external project links in new tabs with `noopener noreferrer`.
 
-Public reads share `PUBLIC_PROJECTS_CACHE_TAG`. Project and technology mutations invalidate the index and affected details. Cover and social images accept validated external HTTP(S) URLs only as a temporary bridge; Milestone 8 must replace them with media IDs through the storage abstraction.
+Public reads share `PUBLIC_PROJECTS_CACHE_TAG`. Project and technology mutations invalidate the index and affected details. Cover and social images support managed media IDs through the shared storage abstraction. Existing validated external HTTP(S) URLs remain compatibility fallbacks; managed media takes precedence.

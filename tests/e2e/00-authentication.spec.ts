@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe.configure({ mode: "serial" });
 
 test("completes setup, protects admin routes, and supports login and logout", async ({ page }) => {
-  test.setTimeout(600_000);
+test.setTimeout(900_000);
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/setup$/);
   await expect(page.getByRole("heading", { name: "Create your administrator" })).toBeVisible();
@@ -390,6 +390,41 @@ test("completes setup, protects admin routes, and supports login and logout", as
   page.once("dialog", (dialog) => dialog.accept());
   await technologyForm.getByRole("button", { name: "Delete" }).click();
   await expect(page.getByRole("heading", { name: "No technologies yet" })).toBeVisible();
+
+  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64");
+  await page.goto("/admin/media");
+  await expect(page.getByText("No media found. Upload the first file to build your library.")).toBeVisible();
+  await page.getByTestId("media-file-input").setInputFiles({ name: "research-figure.png", mimeType: "image/png", buffer: png });
+  await expect(page.getByText("Upload complete.")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("button", { name: /research-figure\.png/ })).toBeVisible();
+  await expect(page.getByText(/1×1/)).toBeVisible();
+  await page.getByLabel("Alternative text").fill("Research workflow diagram");
+  await page.getByRole("button", { name: "Save alternative text" }).click();
+  await expect(page.getByText("Alternative text saved.")).toBeVisible();
+  await page.getByLabel("Search media").fill("workflow");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await expect(page.getByRole("button", { name: /research-figure\.png/ })).toBeVisible();
+
+  await page.goto("/admin/pages/new");
+  await page.getByLabel("Title").fill("Media research note");
+  await page.getByRole("button", { name: "Create draft" }).click();
+  await expect(page).toHaveURL(/\/admin\/pages\/[0-9a-f-]+$/, { timeout: 60_000 });
+  await page.getByRole("button", { name: "Image", exact: true }).click();
+  const mediaPicker = page.getByRole("dialog", { name: "Media picker" });
+  await expect(mediaPicker).toBeVisible();
+  await mediaPicker.getByRole("button", { name: /research-figure\.png/ }).click();
+  await expect(page.locator(".cm-content")).toContainText("Research workflow diagram");
+
+  await page.getByRole("button", { name: "Publish" }).click();
+  await expect(page.getByText("Page published.")).toBeVisible();
+  await page.goto("/media-research-note");
+  await expect(page.getByRole("img", { name: "Research workflow diagram" })).toBeVisible();
+
+  await page.goto("/admin/media");
+  await page.getByRole("button", { name: /research-figure\.png/ }).click();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Delete media" }).click();
+  await expect(page.getByText("research-figure.png")).toHaveCount(0);
 
   await page.goto("/setup");
   await expect(page).toHaveURL(/\/admin$/);

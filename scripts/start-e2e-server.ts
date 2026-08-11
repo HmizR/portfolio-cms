@@ -6,7 +6,7 @@ import { prepareTestDatabase } from "./test-database";
 async function main(): Promise<void> {
   const databaseUrl = await prepareTestDatabase();
   const nextBinary = path.resolve("node_modules", "next", "dist", "bin", "next");
-  const child = spawn(process.execPath, [nextBinary, "dev", "-p", "3100"], {
+  const child = spawn(process.execPath, [nextBinary, "dev", "--webpack", "-p", "3100"], {
     env: {
       ...process.env,
       APP_URL: "http://127.0.0.1:3100",

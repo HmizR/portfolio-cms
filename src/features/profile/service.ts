@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { profiles, siteSettings, socialLinks } from "@/db/schema";
 import { defaultAppearance } from "@/features/profile/defaults";
+import { assertImageMediaIds } from "@/features/media/service";
 import type { AppearanceInput, ProfileInput } from "@/features/profile/validation";
 
 interface AdminIdentity {
@@ -32,6 +33,7 @@ export async function initializePortfolioForAdmin(admin: AdminIdentity): Promise
 }
 
 export async function saveProfile(userId: string, input: ProfileInput): Promise<void> {
+  await assertImageMediaIds([input.avatarMediaId]);
   await db.transaction(async (transaction) => {
     const [profile] = await transaction
       .insert(profiles)
@@ -43,6 +45,7 @@ export async function saveProfile(userId: string, input: ProfileInput): Promise<
         longBiography: input.longBiography,
         location: input.location,
         publicEmail: input.publicEmail,
+        avatarMediaId: input.avatarMediaId,
         avatarUrl: input.avatarUrl,
         updatedAt: new Date(),
       })
@@ -56,6 +59,7 @@ export async function saveProfile(userId: string, input: ProfileInput): Promise<
           longBiography: input.longBiography,
           location: input.location,
           publicEmail: input.publicEmail,
+          avatarMediaId: input.avatarMediaId,
           avatarUrl: input.avatarUrl,
           updatedAt: new Date(),
         },

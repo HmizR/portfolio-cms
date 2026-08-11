@@ -18,4 +18,4 @@ Tags are normalized rows with case-insensitive unique names and unique URL-safe 
 
 `/feed.xml` is a Route Handler that emits RSS 2.0 containing published posts only, with absolute links based on `APP_URL`, escaped XML, publication dates, excerpts, and tag categories. Post lifecycle and tag mutations invalidate the public post cache and revalidate the archive, affected details, and feed.
 
-Cover and social images accept validated external HTTP(S) URLs as a temporary bridge. Milestone 8 must replace these with relationships through the shared media/storage abstraction; it must not embed storage-provider calls into the post feature.
+Cover and social images support managed media relationships through the shared storage abstraction. Existing validated external HTTP(S) URLs remain compatibility fallbacks; managed media takes precedence.

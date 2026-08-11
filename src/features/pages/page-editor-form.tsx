@@ -8,11 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
+import type { MediaRecord } from "@/features/media/queries";
+import { MediaField } from "@/features/media/media-field";
 import { autosavePageAction, renderMarkdownPreviewAction, updatePageAction } from "@/features/pages/actions";
 import { FormField } from "@/features/profile/form-field";
 import type { PageActionState, PageFormInput, PageStatus } from "@/features/pages/validation";
 
 interface PageEditorFormProps {
+  availableMedia: MediaRecord[];
   initialPage: PageFormInput;
   initialPreviewHtml: string;
   initialStatus: PageStatus;
@@ -25,7 +28,7 @@ export function PageEditorForm(props: PageEditorFormProps) {
   return <PageEditorFields {...props} action={action} key={JSON.stringify({ displayedPage, displayedStatus })} page={displayedPage} pending={pending} state={state} status={displayedStatus} />;
 }
 
-function PageEditorFields({ action, initialPreviewHtml, page, pending, state, status }: PageEditorFormProps & {
+function PageEditorFields({ action, availableMedia, initialPreviewHtml, page, pending, state, status }: PageEditorFormProps & {
   action: (payload: FormData) => void;
   page: PageFormInput;
   pending: boolean;
@@ -56,7 +59,7 @@ function PageEditorFields({ action, initialPreviewHtml, page, pending, state, st
         </div>
       </section>
 
-      <div>{state.fieldErrors?.contentMarkdown?.map((error) => <p className="mb-2 text-sm text-red-700" key={error}>{error}</p>)}<MarkdownEditor autosaveAction={autosavePageAction} contentId={page.id} initialPreviewHtml={initialPreviewHtml} onChange={setMarkdown} previewAction={renderMarkdownPreviewAction} value={markdown} /></div>
+      <div>{state.fieldErrors?.contentMarkdown?.map((error) => <p className="mb-2 text-sm text-red-700" key={error}>{error}</p>)}<MarkdownEditor autosaveAction={autosavePageAction} contentId={page.id} initialPreviewHtml={initialPreviewHtml} media={availableMedia} onChange={setMarkdown} previewAction={renderMarkdownPreviewAction} value={markdown} /></div>
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <h2 className="font-serif text-xl font-semibold">Search and sharing</h2>
@@ -65,7 +68,8 @@ function PageEditorFields({ action, initialPreviewHtml, page, pending, state, st
           <FormField errors={state.fieldErrors?.seoTitle} htmlFor="seoTitle" label="SEO title"><Input defaultValue={page.seoTitle ?? ""} id="seoTitle" maxLength={100} name="seoTitle" /></FormField>
           <FormField errors={state.fieldErrors?.seoDescription} htmlFor="seoDescription" label="SEO description"><Input defaultValue={page.seoDescription ?? ""} id="seoDescription" maxLength={300} name="seoDescription" /></FormField>
           <FormField errors={state.fieldErrors?.canonicalUrl} htmlFor="canonicalUrl" label="Canonical URL"><Input defaultValue={page.canonicalUrl ?? ""} id="canonicalUrl" name="canonicalUrl" placeholder="https://example.com/original" type="url" /></FormField>
-          <FormField description="Use an external image URL until the Media milestone." errors={state.fieldErrors?.ogImageUrl} htmlFor="ogImageUrl" label="Open Graph image URL"><Input defaultValue={page.ogImageUrl ?? ""} id="ogImageUrl" name="ogImageUrl" type="url" /></FormField>
+          <MediaField description="Choose an uploaded image for social previews." initialId={page.ogMediaId} initialMedia={availableMedia} label="Managed Open Graph image" name="ogMediaId" />
+          <FormField description="Optional fallback for an externally hosted image." errors={state.fieldErrors?.ogImageUrl} htmlFor="ogImageUrl" label="External Open Graph image URL"><Input defaultValue={page.ogImageUrl ?? ""} id="ogImageUrl" name="ogImageUrl" type="url" /></FormField>
         </div>
       </section>
 

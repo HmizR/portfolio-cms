@@ -5,6 +5,7 @@ import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { pages } from "@/db/schema";
 import { type PageRecord } from "@/features/pages/queries";
+import { assertImageMediaIds } from "@/features/media/service";
 import {
   pageStatusSchema,
   type PageFormInput,
@@ -52,6 +53,7 @@ export async function updatePage(
   input: PageFormInput,
   intent: PageIntent,
 ): Promise<{ page: PageRecord; previousSlug: string }> {
+  await assertImageMediaIds([input.ogMediaId]);
   await assertSlugAvailable(input.slug, input.id);
   const [current] = await db.select().from(pages).where(eq(pages.id, input.id)).limit(1);
   if (!current) throw new Error("Page not found.");
@@ -79,6 +81,7 @@ export async function updatePage(
         seoTitle: input.seoTitle,
         seoDescription: input.seoDescription,
         canonicalUrl: input.canonicalUrl,
+        ogMediaId: input.ogMediaId,
         ogImageUrl: input.ogImageUrl,
         updatedAt: new Date(),
       })

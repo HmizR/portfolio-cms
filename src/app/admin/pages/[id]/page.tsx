@@ -6,6 +6,7 @@ import { PageEditorForm } from "@/features/pages/page-editor-form";
 import { getPageById } from "@/features/pages/queries";
 import { pageIdSchema } from "@/features/pages/validation";
 import { renderMarkdown } from "@/lib/markdown/render";
+import { listMedia } from "@/features/media/queries";
 
 export const metadata: Metadata = { title: "Edit page | PortfolioCMS" };
 
@@ -13,7 +14,7 @@ export default async function EditPagePage({ params }: { params: Promise<{ id: s
   const { id } = await params;
   const parsedId = pageIdSchema.safeParse(id);
   if (!parsedId.success) notFound();
-  const page = await getPageById(parsedId.data);
+  const [page, availableMedia] = await Promise.all([getPageById(parsedId.data), listMedia()]);
   if (!page) notFound();
   const editableMarkdown = page.draftMarkdown ?? page.contentMarkdown;
   const initialPreviewHtml = await renderMarkdown(editableMarkdown);
@@ -28,7 +29,8 @@ export default async function EditPagePage({ params }: { params: Promise<{ id: s
     seoTitle: page.seoTitle,
     seoDescription: page.seoDescription,
     canonicalUrl: page.canonicalUrl,
+    ogMediaId: page.ogMediaId,
     ogImageUrl: page.ogImageUrl,
   };
-  return <div className="mx-auto max-w-6xl"><div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold uppercase tracking-[0.14em] text-teal-800">Pages</p><h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight">Edit page</h1></div><DeletePageForm id={page.id} title={page.title} /></div><PageEditorForm initialPage={formPage} initialPreviewHtml={initialPreviewHtml} initialStatus={page.status} /></div>;
+  return <div className="mx-auto max-w-6xl"><div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold uppercase tracking-[0.14em] text-teal-800">Pages</p><h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight">Edit page</h1></div><DeletePageForm id={page.id} title={page.title} /></div><PageEditorForm availableMedia={availableMedia} initialPage={formPage} initialPreviewHtml={initialPreviewHtml} initialStatus={page.status} /></div>;
 }

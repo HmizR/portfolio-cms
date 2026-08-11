@@ -38,6 +38,7 @@ function valuesFromPageForm(formData: FormData) {
     seoTitle: formData.get("seoTitle"),
     seoDescription: formData.get("seoDescription"),
     canonicalUrl: formData.get("canonicalUrl"),
+    ogMediaId: formData.get("ogMediaId"),
     ogImageUrl: formData.get("ogImageUrl"),
   };
 }

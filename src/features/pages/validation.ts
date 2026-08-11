@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { isReservedPageSlug } from "@/features/pages/slug";
+import { optionalMediaIdSchema } from "@/features/media/validation";
 
 const optionalText = (maximum: number) =>
   z.string().trim().max(maximum).transform((value) => value || null);
@@ -46,6 +47,7 @@ export const pageFormSchema = z.object({
   seoTitle: optionalText(100),
   seoDescription: optionalText(300),
   canonicalUrl: optionalHttpUrl("Canonical URL"),
+  ogMediaId: optionalMediaIdSchema,
   ogImageUrl: optionalHttpUrl("Open Graph image URL"),
 });
 

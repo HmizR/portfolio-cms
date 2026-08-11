@@ -1,7 +1,7 @@
 import { MarkdownContent } from "@/components/markdown/markdown-content";
 import type { PostTagRecord } from "@/features/posts/queries";
 
-/* eslint-disable @next/next/no-img-element -- Milestone 6 accepts arbitrary validated external cover URLs; canonical optimized media arrives in Milestone 8. */
+/* eslint-disable @next/next/no-img-element -- Covers may use runtime managed-media URLs or validated external compatibility URLs. */
 
 export function PostPresentation({ coverImageUrl, excerpt, html, publishedAt, tags, title }: {
   coverImageUrl: string | null;

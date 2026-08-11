@@ -11,6 +11,7 @@ describe("profile and appearance validation", () => {
       longBiography: "",
       location: "Bangkok, Thailand",
       publicEmail: "",
+      avatarMediaId: "",
       avatarUrl: "",
       socialLinks: [{ platform: "Custom network", label: "Research profile", url: "https://example.com/maya", iconIdentifier: "link", isVisible: true }],
     });
@@ -22,8 +23,8 @@ describe("profile and appearance validation", () => {
 
   it("rejects unsafe appearance options and malformed social URLs", () => {
     expect(appearanceSchema.safeParse({ siteTitle: "Site", siteDescription: "", accentColor: "rainbow", contentWidth: "standard", profileImageShape: "circle", typography: "classic" }).success).toBe(false);
-    expect(profileSchema.safeParse({ fullName: "Maya Chen", headline: "", shortBiography: "", longBiography: "", location: "", publicEmail: "", avatarUrl: "", socialLinks: [{ platform: "GitHub", label: "GitHub", url: "not-a-url", iconIdentifier: "github", isVisible: true }] }).success).toBe(false);
-    expect(profileSchema.safeParse({ fullName: "Maya Chen", headline: "", shortBiography: "", longBiography: "", location: "", publicEmail: "", avatarUrl: "//example.com/avatar.jpg", socialLinks: [] }).success).toBe(false);
-    expect(profileSchema.safeParse({ fullName: "Maya Chen", headline: "", shortBiography: "", longBiography: "", location: "", publicEmail: "", avatarUrl: "", socialLinks: [{ platform: "Unsafe", label: "Unsafe", url: "javascript:alert(1)", iconIdentifier: "link", isVisible: true }] }).success).toBe(false);
+    expect(profileSchema.safeParse({ fullName: "Maya Chen", headline: "", shortBiography: "", longBiography: "", location: "", publicEmail: "", avatarMediaId: "", avatarUrl: "", socialLinks: [{ platform: "GitHub", label: "GitHub", url: "not-a-url", iconIdentifier: "github", isVisible: true }] }).success).toBe(false);
+    expect(profileSchema.safeParse({ fullName: "Maya Chen", headline: "", shortBiography: "", longBiography: "", location: "", publicEmail: "", avatarMediaId: "", avatarUrl: "//example.com/avatar.jpg", socialLinks: [] }).success).toBe(false);
+    expect(profileSchema.safeParse({ fullName: "Maya Chen", headline: "", shortBiography: "", longBiography: "", location: "", publicEmail: "", avatarMediaId: "", avatarUrl: "", socialLinks: [{ platform: "Unsafe", label: "Unsafe", url: "javascript:alert(1)", iconIdentifier: "link", isVisible: true }] }).success).toBe(false);
   });
 });

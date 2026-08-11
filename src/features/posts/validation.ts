@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { optionalMediaIdSchema } from "@/features/media/validation";
+
 const optionalText = (maximum: number) =>
   z.string().trim().max(maximum).transform((value) => value || null);
 
@@ -46,11 +48,13 @@ export const postFormSchema = z.object({
   slug: postSlugSchema,
   excerpt: z.string().trim().max(500, "Excerpt must be 500 characters or fewer."),
   contentMarkdown: z.string().max(200_000, "Markdown must be 200,000 characters or fewer."),
+  coverMediaId: optionalMediaIdSchema,
   coverImageUrl: optionalHttpUrl("Cover image URL"),
   tagIds: z.array(tagIdSchema).max(50).refine((ids) => new Set(ids).size === ids.length, "Choose each tag only once."),
   seoTitle: optionalText(100),
   seoDescription: optionalText(300),
   canonicalUrl: optionalHttpUrl("Canonical URL"),
+  ogMediaId: optionalMediaIdSchema,
   ogImageUrl: optionalHttpUrl("Open Graph image URL"),
 });
 

@@ -22,7 +22,7 @@ Appearance is intentionally constrained to safe presets:
 
 The public shell exposes those choices as scoped CSS variables/data attributes. Arbitrary CSS and a generic theme builder are out of scope.
 
-The avatar remains a validated URL field until the storage-backed media library is implemented in Milestone 8. Root-relative paths and absolute HTTP(S) URLs are accepted; no upload behavior is implied.
+The avatar supports a managed media relationship selected from the storage-backed library. Root-relative paths and absolute HTTP(S) URLs remain accepted as compatibility fallbacks; managed media takes precedence publicly.
 
 ## Initialization and fallback
 

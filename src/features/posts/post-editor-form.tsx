@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
+import type { MediaRecord } from "@/features/media/queries";
+import { MediaField } from "@/features/media/media-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +16,7 @@ import type { PostActionState, PostFormInput, PostStatus } from "@/features/post
 import { FormField } from "@/features/profile/form-field";
 
 interface PostEditorFormProps {
+  availableMedia: MediaRecord[];
   availableTags: PostTagRecord[];
   initialPost: PostFormInput;
   initialPreviewHtml: string;
@@ -27,7 +30,7 @@ export function PostEditorForm(props: PostEditorFormProps) {
   return <PostEditorFields {...props} action={action} key={JSON.stringify({ displayedPost, displayedStatus })} pending={pending} post={displayedPost} state={state} status={displayedStatus} />;
 }
 
-function PostEditorFields({ action, availableTags, initialPreviewHtml, pending, post, state, status }: Omit<PostEditorFormProps, "initialPost" | "initialStatus"> & {
+function PostEditorFields({ action, availableMedia, availableTags, initialPreviewHtml, pending, post, state, status }: Omit<PostEditorFormProps, "initialPost" | "initialStatus"> & {
   action: (payload: FormData) => void;
   pending: boolean;
   post: PostFormInput;
@@ -54,7 +57,8 @@ function PostEditorFields({ action, availableTags, initialPreviewHtml, pending, 
           <FormField errors={state.fieldErrors?.title} htmlFor="title" label="Title"><Input defaultValue={post.title} id="title" maxLength={200} name="title" required /></FormField>
           <FormField description="Changing the title does not change this URL." errors={state.fieldErrors?.slug} htmlFor="slug" label="Slug"><Input defaultValue={post.slug} id="slug" maxLength={120} name="slug" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required /></FormField>
           <div className="sm:col-span-2"><FormField errors={state.fieldErrors?.excerpt} htmlFor="excerpt" label="Excerpt"><Textarea defaultValue={post.excerpt} id="excerpt" maxLength={500} name="excerpt" rows={3} /></FormField></div>
-          <div className="sm:col-span-2"><FormField description="Use an external image URL until the Media milestone." errors={state.fieldErrors?.coverImageUrl} htmlFor="coverImageUrl" label="Cover image URL"><Input defaultValue={post.coverImageUrl ?? ""} id="coverImageUrl" name="coverImageUrl" type="url" /></FormField></div>
+          <div className="sm:col-span-2"><MediaField description="Choose an uploaded image for the post cover." initialId={post.coverMediaId} initialMedia={availableMedia} label="Managed cover image" name="coverMediaId" /></div>
+          <div className="sm:col-span-2"><FormField description="Optional fallback for an externally hosted cover." errors={state.fieldErrors?.coverImageUrl} htmlFor="coverImageUrl" label="External cover image URL"><Input defaultValue={post.coverImageUrl ?? ""} id="coverImageUrl" name="coverImageUrl" type="url" /></FormField></div>
         </div>
       </section>
 
@@ -64,7 +68,7 @@ function PostEditorFields({ action, availableTags, initialPreviewHtml, pending, 
         {state.fieldErrors?.tagIds?.map((error) => <p className="mt-2 text-sm text-red-700" key={error}>{error}</p>)}
       </section>
 
-      <div>{state.fieldErrors?.contentMarkdown?.map((error) => <p className="mb-2 text-sm text-red-700" key={error}>{error}</p>)}<MarkdownEditor autosaveAction={autosavePostAction} contentId={post.id} initialPreviewHtml={initialPreviewHtml} onChange={setMarkdown} previewAction={renderPostMarkdownPreviewAction} value={markdown} /></div>
+      <div>{state.fieldErrors?.contentMarkdown?.map((error) => <p className="mb-2 text-sm text-red-700" key={error}>{error}</p>)}<MarkdownEditor autosaveAction={autosavePostAction} contentId={post.id} initialPreviewHtml={initialPreviewHtml} media={availableMedia} onChange={setMarkdown} previewAction={renderPostMarkdownPreviewAction} value={markdown} /></div>
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <h2 className="font-serif text-xl font-semibold">Search and sharing</h2>
@@ -73,7 +77,8 @@ function PostEditorFields({ action, availableTags, initialPreviewHtml, pending, 
           <FormField errors={state.fieldErrors?.seoTitle} htmlFor="seoTitle" label="SEO title"><Input defaultValue={post.seoTitle ?? ""} id="seoTitle" maxLength={100} name="seoTitle" /></FormField>
           <FormField errors={state.fieldErrors?.seoDescription} htmlFor="seoDescription" label="SEO description"><Input defaultValue={post.seoDescription ?? ""} id="seoDescription" maxLength={300} name="seoDescription" /></FormField>
           <FormField errors={state.fieldErrors?.canonicalUrl} htmlFor="canonicalUrl" label="Canonical URL"><Input defaultValue={post.canonicalUrl ?? ""} id="canonicalUrl" name="canonicalUrl" placeholder="https://example.com/original" type="url" /></FormField>
-          <FormField description="Use an external image URL until the Media milestone." errors={state.fieldErrors?.ogImageUrl} htmlFor="ogImageUrl" label="Social image URL"><Input defaultValue={post.ogImageUrl ?? ""} id="ogImageUrl" name="ogImageUrl" type="url" /></FormField>
+          <MediaField description="Choose an uploaded image for social previews." initialId={post.ogMediaId} initialMedia={availableMedia} label="Managed social image" name="ogMediaId" />
+          <FormField description="Optional fallback for an externally hosted social image." errors={state.fieldErrors?.ogImageUrl} htmlFor="ogImageUrl" label="External social image URL"><Input defaultValue={post.ogImageUrl ?? ""} id="ogImageUrl" name="ogImageUrl" type="url" /></FormField>
         </div>
       </section>
 

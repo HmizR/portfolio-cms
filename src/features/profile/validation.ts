@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { optionalMediaIdSchema } from "@/features/media/validation";
+
 const optionalText = (maximum: number) =>
   z.string().trim().max(maximum).transform((value) => value || null);
 
@@ -49,6 +51,7 @@ export const profileSchema = z.object({
     .max(10_000, "Long biography must be 10,000 characters or fewer."),
   location: z.string().trim().max(160, "Location must be 160 characters or fewer."),
   publicEmail: optionalText(254).pipe(z.string().email("Enter a valid email address.").nullable()),
+  avatarMediaId: optionalMediaIdSchema,
   avatarUrl: avatarUrlSchema,
   socialLinks: z.array(socialLinkSchema).max(20, "Add no more than 20 social links."),
 });

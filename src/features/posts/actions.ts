@@ -40,11 +40,13 @@ function valuesFromPostForm(formData: FormData) {
     slug: formData.get("slug"),
     excerpt: formData.get("excerpt"),
     contentMarkdown: formData.get("contentMarkdown"),
+    coverMediaId: formData.get("coverMediaId"),
     coverImageUrl: formData.get("coverImageUrl"),
     tagIds: formData.getAll("tagIds"),
     seoTitle: formData.get("seoTitle"),
     seoDescription: formData.get("seoDescription"),
     canonicalUrl: formData.get("canonicalUrl"),
+    ogMediaId: formData.get("ogMediaId"),
     ogImageUrl: formData.get("ogImageUrl"),
   };
 }

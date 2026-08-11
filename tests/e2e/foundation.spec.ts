@@ -59,4 +59,6 @@ test("protects private content previews from anonymous visitors", async ({ page 
   await expect(page).toHaveURL(/\/login$/);
   await page.goto("/preview/projects/7fe4e8dd-8f22-4b9f-b19a-7cd4529f8d70");
   await expect(page).toHaveURL(/\/login$/);
+  const response = await page.request.get("/api/admin/media");
+  expect(response.status()).toBe(401);
 });

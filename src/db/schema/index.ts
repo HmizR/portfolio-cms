@@ -107,6 +107,32 @@ export const rateLimits = pgTable(
   (table) => [uniqueIndex("rate_limits_key_unique").on(table.key)],
 );
 
+export const media = pgTable(
+  "media",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    storageKey: text("storage_key").notNull(),
+    filename: text("filename").notNull(),
+    originalFilename: text("original_filename").notNull(),
+    mimeType: text("mime_type").notNull(),
+    fileSize: integer("file_size").notNull(),
+    width: integer("width"),
+    height: integer("height"),
+    altText: text("alt_text").default("").notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("media_storage_key_unique").on(table.storageKey),
+    index("media_created_at_index").on(table.createdAt),
+    index("media_mime_type_index").on(table.mimeType),
+    check("media_filename_check", sql`length(trim(${table.filename})) > 0`),
+    check("media_original_filename_check", sql`length(trim(${table.originalFilename})) > 0`),
+    check("media_file_size_check", sql`${table.fileSize} > 0`),
+    check("media_dimensions_check", sql`(${table.width} is null and ${table.height} is null) or (${table.width} > 0 and ${table.height} > 0)`),
+    check("media_mime_type_check", sql`${table.mimeType} in ('image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf')`),
+  ],
+);
+
 export const profiles = pgTable(
   "profiles",
   {
@@ -121,12 +147,14 @@ export const profiles = pgTable(
     longBiography: text("long_biography").default("").notNull(),
     location: text("location").default("").notNull(),
     publicEmail: text("public_email"),
+    avatarMediaId: uuid("avatar_media_id").references(() => media.id, { onDelete: "set null" }),
     avatarUrl: text("avatar_url"),
     ...timestamps,
   },
   (table) => [
     uniqueIndex("profiles_user_id_unique").on(table.userId),
     uniqueIndex("profiles_singleton_key_unique").on(table.singletonKey),
+    index("profiles_avatar_media_id_index").on(table.avatarMediaId),
     check("profiles_singleton_key_check", sql`${table.singletonKey} = 1`),
   ],
 );
@@ -204,12 +232,14 @@ export const pages = pgTable(
     seoTitle: text("seo_title"),
     seoDescription: text("seo_description"),
     canonicalUrl: text("canonical_url"),
+    ogMediaId: uuid("og_media_id").references(() => media.id, { onDelete: "set null" }),
     ogImageUrl: text("og_image_url"),
     ...timestamps,
   },
   (table) => [
     uniqueIndex("pages_slug_unique").on(table.slug),
     index("pages_status_published_at_index").on(table.status, table.publishedAt),
+    index("pages_og_media_id_index").on(table.ogMediaId),
     check("pages_status_check", sql`${table.status} in ('draft', 'published', 'archived')`),
   ],
 );
@@ -252,18 +282,22 @@ export const posts = pgTable(
     excerpt: text("excerpt").default("").notNull(),
     contentMarkdown: text("content_markdown").default("").notNull(),
     draftMarkdown: text("draft_markdown"),
+    coverMediaId: uuid("cover_media_id").references(() => media.id, { onDelete: "set null" }),
     coverImageUrl: text("cover_image_url"),
     status: text("status").default("draft").notNull(),
     publishedAt: timestamp("published_at", { withTimezone: true }),
     seoTitle: text("seo_title"),
     seoDescription: text("seo_description"),
     canonicalUrl: text("canonical_url"),
+    ogMediaId: uuid("og_media_id").references(() => media.id, { onDelete: "set null" }),
     ogImageUrl: text("og_image_url"),
     ...timestamps,
   },
   (table) => [
     uniqueIndex("posts_slug_unique").on(table.slug),
     index("posts_status_published_at_index").on(table.status, table.publishedAt),
+    index("posts_cover_media_id_index").on(table.coverMediaId),
+    index("posts_og_media_id_index").on(table.ogMediaId),
     check("posts_title_check", sql`length(trim(${table.title})) > 0`),
     check("posts_status_check", sql`${table.status} in ('draft', 'published', 'archived')`),
     check(
@@ -313,6 +347,7 @@ export const projects = pgTable(
     summary: text("summary").default("").notNull(),
     contentMarkdown: text("content_markdown").default("").notNull(),
     draftMarkdown: text("draft_markdown"),
+    coverMediaId: uuid("cover_media_id").references(() => media.id, { onDelete: "set null" }),
     coverImageUrl: text("cover_image_url"),
     githubUrl: text("github_url"),
     demoUrl: text("demo_url"),
@@ -326,6 +361,7 @@ export const projects = pgTable(
     seoTitle: text("seo_title"),
     seoDescription: text("seo_description"),
     canonicalUrl: text("canonical_url"),
+    ogMediaId: uuid("og_media_id").references(() => media.id, { onDelete: "set null" }),
     ogImageUrl: text("og_image_url"),
     ...timestamps,
   },
@@ -333,6 +369,8 @@ export const projects = pgTable(
     uniqueIndex("projects_slug_unique").on(table.slug),
     index("projects_status_featured_index").on(table.status, table.isFeatured),
     index("projects_status_published_at_index").on(table.status, table.publishedAt),
+    index("projects_cover_media_id_index").on(table.coverMediaId),
+    index("projects_og_media_id_index").on(table.ogMediaId),
     check("projects_title_check", sql`length(trim(${table.title})) > 0`),
     check("projects_status_check", sql`${table.status} in ('draft', 'published', 'archived')`),
     check("projects_project_status_check", sql`${table.projectStatus} in ('planned', 'active', 'completed', 'archived')`),

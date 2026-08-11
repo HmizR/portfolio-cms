@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { updateProfileAction } from "@/features/profile/actions";
+import { MediaField } from "@/features/media/media-field";
+import type { MediaRecord } from "@/features/media/queries";
 import { FormField } from "@/features/profile/form-field";
 import type { ProfileEditorData } from "@/features/profile/queries";
 import type { SocialLinkInput } from "@/features/profile/validation";
 
-export function ProfileForm({ initialData }: { initialData: ProfileEditorData }) {
+export function ProfileForm({ availableMedia, initialData }: { availableMedia: MediaRecord[]; initialData: ProfileEditorData }) {
   const [state, action, pending] = useActionState(updateProfileAction, {});
   const [links, setLinks] = useState<SocialLinkInput[]>(initialData.socialLinks);
 
@@ -54,7 +56,8 @@ export function ProfileForm({ initialData }: { initialData: ProfileEditorData })
             <Input defaultValue={initialData.publicEmail ?? ""} id="publicEmail" maxLength={254} name="publicEmail" type="email" />
           </FormField>
           <div className="sm:col-span-2">
-            <FormField description="Use an external image URL for now. Managed uploads arrive with the Media milestone." errors={state.fieldErrors?.avatarUrl} htmlFor="avatarUrl" label="Avatar URL">
+            <MediaField description="Choose an uploaded image for the public profile." initialId={initialData.avatarMediaId} initialMedia={availableMedia} label="Managed avatar" name="avatarMediaId" />
+            <FormField description="Optional fallback for an externally hosted avatar." errors={state.fieldErrors?.avatarUrl} htmlFor="avatarUrl" label="External avatar URL">
               <Input defaultValue={initialData.avatarUrl ?? ""} id="avatarUrl" maxLength={2048} name="avatarUrl" placeholder="https://example.com/profile.jpg" />
             </FormField>
           </div>

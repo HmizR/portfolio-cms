@@ -3,13 +3,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { listPages } from "@/features/pages/queries";
+import { countMedia } from "@/features/media/queries";
 import { listPosts } from "@/features/posts/queries";
 import { listProjects } from "@/features/projects/queries";
 
 export const metadata: Metadata = { title: "Overview | PortfolioCMS" };
 
 export default async function AdminPage() {
-  const [pages, posts, projects] = await Promise.all([listPages(), listPosts(), listProjects()]);
+  const [pages, posts, projects, mediaCount] = await Promise.all([listPages(), listPosts(), listProjects(), countMedia()]);
   const draftCount = [...pages, ...posts, ...projects].filter((item) => item.status === "draft").length;
   const recent = [
     ...pages.map((page) => ({ href: `/admin/pages/${page.id}`, id: page.id, kind: "Page", title: page.title, updatedAt: page.updatedAt })),
@@ -22,8 +23,8 @@ export default async function AdminPage() {
     <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight sm:text-4xl">Your workspace is ready</h1>
     <p className="mt-3 max-w-2xl leading-7 text-slate-600">Manage public identity, pages, posts, and portfolio projects from this protected workspace.</p>
 
-    <dl className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-      {[{ label: "Pages", value: pages.length }, { label: "Posts", value: posts.length }, { label: "Projects", value: projects.length }, { label: "Featured projects", value: projects.filter((project) => project.isFeatured).length }, { label: "Draft content", value: draftCount }].map((item) => <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm" key={item.label}><dt className="text-sm font-semibold text-slate-500">{item.label}</dt><dd className="mt-2 font-serif text-3xl font-semibold text-slate-950">{item.value}</dd></div>)}
+    <dl className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+      {[{ label: "Pages", value: pages.length }, { label: "Posts", value: posts.length }, { label: "Projects", value: projects.length }, { label: "Media", value: mediaCount }, { label: "Featured projects", value: projects.filter((project) => project.isFeatured).length }, { label: "Draft content", value: draftCount }].map((item) => <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm" key={item.label}><dt className="text-sm font-semibold text-slate-500">{item.label}</dt><dd className="mt-2 font-serif text-3xl font-semibold text-slate-950">{item.value}</dd></div>)}
     </dl>
 
     <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.2fr]">

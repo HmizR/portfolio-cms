@@ -5,6 +5,7 @@ import { and, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { posts, postTags, tags } from "@/db/schema";
 import type { PostRecord } from "@/features/posts/queries";
+import { assertImageMediaIds } from "@/features/media/service";
 import { postStatusSchema, type PostFormInput, type PostIntent } from "@/features/posts/validation";
 
 export class PostSlugConflictError extends Error {
@@ -50,6 +51,7 @@ export async function createPost(input: { title: string; slug: string }): Promis
 }
 
 export async function updatePost(input: PostFormInput, intent: PostIntent): Promise<{ post: PostRecord; previousSlug: string }> {
+  await assertImageMediaIds([input.coverMediaId, input.ogMediaId]);
   await assertPostSlugAvailable(input.slug, input.id);
   return db.transaction(async (tx) => {
     const [current] = await tx.select().from(posts).where(eq(posts.id, input.id)).limit(1);
@@ -75,12 +77,14 @@ export async function updatePost(input: PostFormInput, intent: PostIntent): Prom
           excerpt: input.excerpt,
           contentMarkdown: input.contentMarkdown,
           draftMarkdown: null,
+          coverMediaId: input.coverMediaId,
           coverImageUrl: input.coverImageUrl,
           status: nextStatus,
           publishedAt,
           seoTitle: input.seoTitle,
           seoDescription: input.seoDescription,
           canonicalUrl: input.canonicalUrl,
+          ogMediaId: input.ogMediaId,
           ogImageUrl: input.ogImageUrl,
           updatedAt: new Date(),
         })

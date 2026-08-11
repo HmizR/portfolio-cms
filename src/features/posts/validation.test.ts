@@ -8,11 +8,13 @@ const validPost = {
   slug: "research-note",
   excerpt: "A short note.",
   contentMarkdown: "# Note",
+  coverMediaId: "",
   coverImageUrl: "",
   tagIds: ["a2d29907-b2d3-4c10-b534-530ee6cd71fb"],
   seoTitle: "",
   seoDescription: "",
   canonicalUrl: "",
+  ogMediaId: "",
   ogImageUrl: "",
 };
 

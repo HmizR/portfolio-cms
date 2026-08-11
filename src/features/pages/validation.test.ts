@@ -13,6 +13,7 @@ const validPage = {
   seoTitle: "",
   seoDescription: "",
   canonicalUrl: "",
+  ogMediaId: "",
   ogImageUrl: "",
 };
 

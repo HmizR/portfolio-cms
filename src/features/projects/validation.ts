@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { optionalMediaIdSchema } from "@/features/media/validation";
+
 const optionalText = (maximum: number) => z.string().trim().max(maximum).transform((value) => value || null);
 const optionalDate = z.string().trim().refine((value) => {
   if (!value) return true;
@@ -28,6 +30,7 @@ export const projectFormSchema = z.object({
   slug: projectSlugSchema,
   summary: z.string().trim().max(700, "Summary must be 700 characters or fewer."),
   contentMarkdown: z.string().max(200_000, "Markdown must be 200,000 characters or fewer."),
+  coverMediaId: optionalMediaIdSchema,
   coverImageUrl: optionalHttpUrl("Cover image URL"),
   githubUrl: optionalHttpUrl("GitHub URL"),
   demoUrl: optionalHttpUrl("Demo URL"),
@@ -40,6 +43,7 @@ export const projectFormSchema = z.object({
   seoTitle: optionalText(100),
   seoDescription: optionalText(300),
   canonicalUrl: optionalHttpUrl("Canonical URL"),
+  ogMediaId: optionalMediaIdSchema,
   ogImageUrl: optionalHttpUrl("Open Graph image URL"),
 }).superRefine((value, context) => {
   if (value.startedOn && value.endedOn && value.endedOn < value.startedOn) context.addIssue({ code: "custom", path: ["endedOn"], message: "End date must be on or after the start date." });

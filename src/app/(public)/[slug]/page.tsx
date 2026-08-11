@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { PublicShell } from "@/components/public/public-shell";
 import { getPublicNavigation } from "@/features/navigation/queries";
+import { getMediaUrlById } from "@/features/media/queries";
 import { PagePresentation } from "@/features/pages/page-presentation";
 import { getPublishedPageBySlug } from "@/features/pages/queries";
 import { pageSlugSchema } from "@/features/pages/validation";
@@ -19,11 +20,12 @@ export async function generateMetadata({ params }: PublicPageProps): Promise<Met
   if (!parsed.success) return {};
   const page = await getPublishedPageBySlug(parsed.data);
   if (!page) return {};
+  const ogImageUrl = await getMediaUrlById(page.ogMediaId) ?? page.ogImageUrl;
   return {
     title: page.seoTitle ?? page.title,
     description: (page.seoDescription ?? page.excerpt) || undefined,
     alternates: page.canonicalUrl ? { canonical: page.canonicalUrl } : undefined,
-    openGraph: page.ogImageUrl ? { images: [{ url: page.ogImageUrl }] } : undefined,
+    openGraph: ogImageUrl ? { images: [{ url: ogImageUrl }] } : undefined,
   };
 }
 

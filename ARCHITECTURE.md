@@ -444,7 +444,7 @@ created_at
 updated_at
 ```
 
-Milestone 4 implements this as one `pages` table. `content_markdown` is the canonical, explicitly saved document; nullable `draft_markdown` is an autosave buffer used only by authenticated editing and preview. Explicit save and lifecycle actions promote the buffer to canonical content. Until the media abstraction arrives in Milestone 8, the page-level Open Graph image uses a validated external URL bridge rather than a media relationship.
+Milestone 4 implements this as one `pages` table. `content_markdown` is the canonical, explicitly saved document; nullable `draft_markdown` is an autosave buffer used only by authenticated editing and preview. Explicit save and lifecycle actions promote the buffer to canonical content. Milestone 8 adds an optional media relationship for the Open Graph image while retaining the validated external URL as a compatibility fallback.
 
 ## Posts
 
@@ -465,7 +465,7 @@ created_at
 updated_at
 ```
 
-Milestone 6 follows the page publication boundary: `content_markdown` is canonical, nullable `draft_markdown` is the authenticated autosave buffer, and explicit save/lifecycle actions promote it. `published_at` records first publication, and a database check prevents a published post without that timestamp. Until Milestone 8, cover and Open Graph images use validated external URL bridges rather than premature media/storage coupling.
+Milestone 6 follows the page publication boundary: `content_markdown` is canonical, nullable `draft_markdown` is the authenticated autosave buffer, and explicit save/lifecycle actions promote it. `published_at` records first publication, and a database check prevents a published post without that timestamp. Milestone 8 adds optional media relationships for cover and Open Graph images; validated external URLs remain compatibility fallbacks.
 
 Tags are normalized with case-insensitive unique names and unique slugs. `post_tags` uses a composite primary key and cascading ID relationships. Post content and complete tag assignment replacement are written transactionally. Public post reads are cached behind one tag, ordered by publication time, normalized after cache serialization, and invalidated together with `/posts`, affected detail paths, and `/feed.xml`.
 
@@ -496,7 +496,7 @@ updated_at
 
 Milestone 7 implements `projects` with the same canonical/private-draft Markdown boundary as pages and posts. CMS publication status is independent from the checked project lifecycle (`planned`, `active`, `completed`, `archived`). PostgreSQL checks require a publication timestamp for public rows and reject inverted optional date ranges. Featured state affects public index ordering but does not bypass publication rules.
 
-Technologies are normalized with case-insensitive unique names and unique slugs. `project_technologies` uses stable IDs, cascading foreign keys, a composite primary key, and explicit non-negative ordering. Project content and its complete technology assignment are updated transactionally. Public project queries are cached behind a feature tag, ordered featured-first and then by recency, and invalidated by project and technology mutations. Validated external cover/social URLs remain a temporary bridge to Milestone 8 media relationships.
+Technologies are normalized with case-insensitive unique names and unique slugs. `project_technologies` uses stable IDs, cascading foreign keys, a composite primary key, and explicit non-negative ordering. Project content and its complete technology assignment are updated transactionally. Public project queries are cached behind a feature tag, ordered featured-first and then by recency, and invalidated by project and technology mutations. Milestone 8 adds optional cover/social media relationships while retaining validated external URLs as compatibility fallbacks.
 
 ## Publications
 
@@ -823,7 +823,7 @@ Example conceptual API:
 interface StorageProvider {
   upload(input: UploadInput): Promise<StoredObject>;
   delete(key: string): Promise<void>;
-  getPublicUrl(key: string): string;
+  read(key: string): Promise<ReadObject>;
 }
 ```
 
@@ -840,6 +840,8 @@ This allows:
 - other S3-compatible providers
 
 without rewriting feature logic.
+
+Milestone 8 implements this interface with the AWS S3 client against any compatible endpoint. The object bucket remains private. `/media/[id]` resolves the canonical storage key from PostgreSQL and streams the object with server-held credentials, so browser-facing URLs remain stable without exposing the bucket or credentials. Upload persistence compensates for database failure by attempting object cleanup.
 
 ---
 

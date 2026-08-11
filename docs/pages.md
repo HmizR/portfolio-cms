@@ -24,7 +24,7 @@ Raw HTML is disabled. The generated syntax tree is sanitized before trusted KaTe
 
 ## Editor
 
-The shared CodeMirror 6 editor in `src/components/markdown/markdown-editor.tsx` provides Markdown, preview, and split modes, an expanded view, and Markdown insertion controls for pages, posts, and projects. The image control inserts a normal Markdown URL reference. Uploads, drag-and-drop uploads, clipboard image uploads, and the media picker remain owned by Milestone 8.
+The shared CodeMirror 6 editor in `src/components/markdown/markdown-editor.tsx` provides Markdown, preview, and split modes, an expanded view, and Markdown insertion controls for pages, posts, and projects. The image control opens the managed media picker and inserts portable Markdown URL text. Image paste and drop events use the same authenticated upload flow; ordinary text paste remains native CodeMirror behavior.
 
 Page-specific title, description, canonical URL, and Open Graph image URL overrides are available. The external Open Graph URL is an interim bridge until media storage exists; shared cross-content SEO helpers remain Milestone 11 work.
 

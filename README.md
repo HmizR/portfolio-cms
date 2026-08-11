@@ -1,6 +1,6 @@
 # PortfolioCMS
 
-PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, database-backed profile/settings, custom Markdown pages, dynamic navigation, chronological posts with RSS, and featured portfolio projects with normalized technologies.
+PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, database-backed profile/settings, custom Markdown pages, dynamic navigation, chronological posts with RSS, featured portfolio projects with normalized technologies, and an S3-backed media library.
 
 ## Foundation stack
 
@@ -52,7 +52,11 @@ Use `/admin/posts` to create, edit, preview, publish, archive, and delete posts.
 
 ## Projects and technologies
 
-Use `/admin/projects` to create, edit, preview, publish, archive, and delete portfolio projects. Reusable normalized technologies are managed at `/admin/projects/technologies`. Projects have a lifecycle state separate from CMS visibility, optional dates and external links, and a featured flag that prioritizes them on `/projects`. See `docs/projects.md` for the project lifecycle, relationships, caching, and media bridge.
+Use `/admin/projects` to create, edit, preview, publish, archive, and delete portfolio projects. Reusable normalized technologies are managed at `/admin/projects/technologies`. Projects have a lifecycle state separate from CMS visibility, optional dates and external links, and a featured flag that prioritizes them on `/projects`. See `docs/projects.md` for the project lifecycle, relationships, caching, and managed media behavior.
+
+## Media
+
+Use `/admin/media` to upload, search, select, describe, copy, and delete JPEG, PNG, WebP, GIF, and PDF files. Uploaded objects remain in the private S3-compatible bucket and are delivered through the application by stable media ID. The shared Markdown editor supports the media picker plus image paste and drop upload. See `docs/media.md` for storage, security, and editor integration details.
 
 ## Validation
 
@@ -79,5 +83,6 @@ npm run build
 - `docs/navigation.md` documents destination integrity, public visibility, link behavior, and transactional ordering.
 - `docs/posts.md` documents post publishing, normalized tags, chronological archives, previews, and RSS.
 - `docs/projects.md` documents project publishing, lifecycle states, featured ordering, technologies, previews, and links.
+- `docs/media.md` documents the media library, private object delivery, upload security, managed image fields, and editor integration.
 
 Do not begin a later milestone until the current milestone passes its required checks.

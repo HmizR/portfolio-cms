@@ -32,6 +32,7 @@ export async function updateProfileAction(
     longBiography: formData.get("longBiography"),
     location: formData.get("location"),
     publicEmail: formData.get("publicEmail"),
+    avatarMediaId: formData.get("avatarMediaId"),
     avatarUrl: formData.get("avatarUrl"),
     socialLinks: parseSocialLinks(formData.get("socialLinks")),
   });

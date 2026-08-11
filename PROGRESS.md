@@ -16,11 +16,11 @@ Do not use this file as a replacement for requirements or architecture documenta
 
 Current phase:
 
-**Milestone 7 complete / ready for Milestone 8**
+**Milestone 8 complete / ready for Milestone 9**
 
 Overall status:
 
-**The application foundation, responsive public shell, authentication, profile/settings, pages, navigation, posts/RSS, and featured portfolio projects with normalized technologies are implemented and validated. Milestone 8 has not started.**
+**The application foundation, responsive public shell, authentication, profile/settings, pages, navigation, posts/RSS, projects/technologies, and secure S3-backed media management are implemented and validated. Milestone 9 has not started.**
 
 ---
 
@@ -82,6 +82,9 @@ Confirmed:
 - Post Markdown autosave is private and separate from canonical published content, matching the page publication boundary.
 - Tags are normalized rows related to posts by stable IDs and updated transactionally with post content.
 - Project lifecycle is independent from CMS publication state; project technologies are normalized and updated transactionally with project content.
+- Media uses canonical generated storage keys behind a provider interface; the S3-compatible bucket remains private and `/media/[id]` streams validated objects with server-held credentials.
+- Managed profile/page/post/project images use nullable media IDs with `ON DELETE SET NULL`; existing external URL fields remain compatibility fallbacks.
+- Uploads authenticate independently and validate size, allowlisted MIME/extension agreement, file signatures, and bounded image dimensions before persistence.
 
 ---
 
@@ -328,28 +331,28 @@ Tasks:
 
 ## Milestone 8 — Media
 
-Status: **Not started**
+Status: **Complete**
 
 Tasks:
 
-- [ ] Add media schema
-- [ ] Add migration
-- [ ] Create storage provider interface
-- [ ] Create S3 provider
-- [ ] Configure local object storage
-- [ ] Create bucket bootstrap/documentation
-- [ ] Validate file MIME types
-- [ ] Validate file sizes
-- [ ] Generate storage keys
-- [ ] Build upload flow
-- [ ] Build media library
-- [ ] Implement deletion
-- [ ] Implement alt text editing
-- [ ] Implement media picker
-- [ ] Integrate image insertion into Markdown editor
-- [ ] Implement drag/drop image upload
-- [ ] Implement clipboard paste image upload
-- [ ] Add media tests
+- [x] Add media schema
+- [x] Add migration
+- [x] Create storage provider interface
+- [x] Create S3 provider
+- [x] Configure local object storage
+- [x] Create bucket bootstrap/documentation
+- [x] Validate file MIME types
+- [x] Validate file sizes
+- [x] Generate storage keys
+- [x] Build upload flow
+- [x] Build media library
+- [x] Implement deletion
+- [x] Implement alt text editing
+- [x] Implement media picker
+- [x] Integrate image insertion into Markdown editor
+- [x] Implement drag/drop image upload
+- [x] Implement clipboard paste image upload
+- [x] Add media tests
 
 ---
 
@@ -481,22 +484,22 @@ Tasks:
 
 # 6. Current Task
 
-**Milestone 7 — Projects is complete. No implementation task is currently in progress.**
+**Milestone 8 — Media is complete. No implementation task is currently in progress.**
 
-Completed project work:
+Completed media work:
 
-1. `projects` stores summary, canonical/private Markdown, checked CMS and project lifecycle states, featured state, optional dates, validated external links, cover/social image bridges, and content SEO overrides.
-2. Database checks enforce project lifecycle values, public publication timestamps, valid date ordering, and unique slugs.
-3. `technologies` uses case-insensitive unique names and unique slugs; `project_technologies` uses cascading UUID relationships, a composite primary key, and non-negative ordering.
-4. `/admin/projects` provides CRUD and CMS lifecycle management. `/admin/projects/technologies` provides technology create, rename, delete, conflict handling, and usage counts.
-5. The shared CodeMirror and Markdown pipeline now serves projects. Autosave remains private, previews require authentication, and every mutation independently authenticates and validates input.
-6. Project content and complete technology assignments update transactionally. Draft and CMS-archived projects are excluded from public reads regardless of project lifecycle status.
-7. `/projects` renders a restrained featured-first, recency-aware project index; `/projects/[slug]` renders lifecycle, dates, technologies, safe external links, and Markdown.
-8. Public project reads share targeted cache invalidation across index, detail, lifecycle, and technology changes.
-9. The admin overview now includes project count, featured project count, projects in draft totals/recent content, and a project quick action.
-10. Unit tests cover lifecycle/date/URL/relationship validation. Playwright covers technology CRUD/conflicts, project slug conflicts, autosave isolation, secure preview, featured ordering, project/CMS lifecycle independence, links, archive removal, and cascade cleanup.
+1. `media` stores canonical generated storage keys, generated/original filenames, checked MIME types, positive sizes, paired dimensions, alt text, and UTC timestamps.
+2. Indexed nullable media relationships now serve the profile avatar plus page, post, and project cover/social images with `ON DELETE SET NULL`; legacy external URLs remain compatibility fallbacks.
+3. A provider interface owns upload/read/delete behavior, and the S3 adapter supports MinIO and other compatible endpoints without leaking provider calls into content features.
+4. The bucket remains private. `/media/[id]` validates a stable media ID, resolves its storage key, streams it with server credentials, pins the validated MIME type, and sends `nosniff` and immutable cache headers.
+5. Authenticated uploads validate request/file size, MIME allowlists, extension consistency, file signatures, bounded header-derived dimensions, and server-generated UUID storage keys. SVG remains rejected.
+6. `/admin/media` provides upload, searchable grid selection, dimensions/size details, alternative-text editing, usable URL copying, confirmed deletion, empty states, and actionable upload errors.
+7. The shared CodeMirror editor uses the media picker and native CodeMirror paste/drop handlers to upload images and insert portable Markdown without changing publication state.
+8. The admin profile/page/post/project forms can select managed images. Public renderers and metadata prefer media relationships while preserving existing external URLs.
+9. The admin overview includes a media count, and media deletion invalidates the public profile cache where required.
+10. Unit tests cover metadata, signatures, bounded dimension parsing, and clipboard/drop selection. Playwright covers upload, dimensions, alt text, search, picker insertion, publication, private-bucket delivery, deletion, and anonymous API protection.
 
-Next recommended task: **Milestone 8 — Media**. It has not been started.
+Next recommended task: **Milestone 9 — Academic Portfolio**. It has not been started.
 
 ---
 
@@ -504,7 +507,7 @@ Next recommended task: **Milestone 8 — Media**. It has not been started.
 
 - `npm audit --omit=dev` reports five moderate development-server advisories through Drizzle Kit's deprecated nested `@esbuild-kit`/esbuild dependency. Better Auth's optional Drizzle Kit peer makes npm include the tooling path in the omit-dev report; the vulnerable package is not used by the production application runtime, and npm offers only a breaking Drizzle Kit downgrade as an automated fix.
 - The host currently uses Node.js 20.12.2, below the dependency toolchain's declared Node.js 20.19 minimum. Validation passes on the host, while the production Dockerfile uses Node.js 22.
-- Docker Desktop's BuildKit worker returned `DeadlineExceeded` during the Milestone 6 container-image verification. Compose configuration and the running PostgreSQL/storage services remain healthy, but both BuildKit and legacy image-build attempts stalled until their bounded timeouts. Retry the image build after restarting Docker Desktop; do not treat this host builder condition as an application build failure.
+- Docker Desktop's BuildKit worker returned `DeadlineExceeded` during Milestone 6 and accepted a Milestone 7 retry without progress even after Docker Desktop restarted. Compose configuration and the running PostgreSQL/storage services remain healthy, while production Next.js builds pass. Treat this as a host builder condition and retry container-image verification when Docker's builder is responsive.
 
 ---
 
@@ -675,6 +678,24 @@ Milestone 7 — 2026-08-11
 - Container image build: UNAVAILABLE because Docker Desktop's BuildKit worker again accepted the build without producing progress and the bounded retry was terminated; the production Next.js build passed independently
 - Dependency audit status is unchanged from Milestone 6 because this milestone added no packages
 
+Milestone 8 — 2026-08-11
+
+- `npm run lint`: PASS
+- `npm run typecheck`: PASS
+- `npm run test`: PASS (15 files, 33 tests; media coverage includes metadata limits, MIME/extension agreement, signatures, bounded PNG/GIF dimensions, clipboard/drop image selection, and image-only managed-field assignments)
+- Focused authentication/media Playwright flow: PASS
+- `npm run test:e2e`: PASS (5 Chromium tests; media coverage includes authenticated upload to MinIO, dimensions, alternative text, search, picker insertion, publication, private-bucket delivery, deletion, and anonymous API rejection)
+- `npm run build`: PASS (`/admin/media`, `/api/admin/media`, `/media/[id]`, managed-image content routes, and previews compile as dynamic routes)
+- `npm run db:generate`: PASS (`drizzle/0007_past_argent.sql`; final schema check reports no further changes)
+- `npm run db:migrate`: PASS against the development PostgreSQL service
+- Isolated Playwright database creation, all-migration application, and reset: PASS
+- `npm run db:check`: PASS against the healthy Compose PostgreSQL service
+- `docker compose config --quiet`: PASS (sandbox could not read the user Docker config, but Compose validation exited successfully)
+- Compose `postgres` and `storage` services: RUNNING and HEALTHY
+- Real S3-compatible upload/read/delete integration: PASS against the running private MinIO bucket
+- `npm audit --omit=dev`: 5 moderate tooling-only esbuild advisories through Drizzle Kit; the high-severity no-fix image parser advisory was eliminated by replacing that dependency with bounded allowlisted header parsing
+- Playwright development startup uses Next.js's documented webpack fallback because Turbopack's generated task cache panicked during repeated long serial runs; the production Turbopack build passes
+
 ---
 
 # 11. Important Handoff Notes
@@ -686,7 +707,7 @@ Any future coding session should:
 3. Read `ARCHITECTURE.md`.
 4. Read this file.
 5. Inspect the repository before making changes.
-6. Begin Milestone 8 only when it is the requested scope.
+6. Begin Milestone 9 only when it is the requested scope.
 7. Avoid prematurely implementing later milestones.
 8. Update this file before ending meaningful work.
 
@@ -720,7 +741,7 @@ Milestone 3 handoff decisions:
 - Keep social networks flexible; do not replace `social_links` with fixed platform columns or a platform enum.
 - Keep public profile/site reads behind `getPublicSiteData()` so request-time deferral, cache tagging, and invalidation remain centralized.
 - Public navigation is now database-driven through the Milestone 5 navigation feature.
-- The avatar URL is an intentional bridge to Milestone 8; future uploads must replace it through the storage abstraction rather than adding storage code to the profile feature.
+- Managed media now owns the preferred avatar relationship; the validated URL remains only a compatibility fallback.
 - Appearance values remain controlled tokens. Dark mode is still an open product decision, not an unfinished Milestone 3 requirement.
 
 Milestone 4 handoff decisions:
@@ -730,8 +751,8 @@ Milestone 4 handoff decisions:
 - Normalize timestamp values after the Next.js public-page cache boundary because cached values are serialized before being returned to application code.
 - Keep raw HTML disabled and Mermaid in strict mode. Shiki remains server-side; only diagram rendering is dynamically loaded in the browser when required.
 - Page navigation now stores stable page IDs and resolves current slugs through the Milestone 5 navigation feature.
-- Keep URL-based image insertion as the Milestone 4 boundary. Uploads, drag/drop, clipboard images, and the media picker belong to Milestone 8 and must use the storage abstraction.
-- The external page Open Graph image URL is an interim bridge. Replace it with a media relationship in Milestone 8 without duplicating the later shared SEO architecture from Milestone 11.
+- Keep image insertion on standard Markdown URL text. The Milestone 8 picker, paste, and drop paths all upload through the shared storage abstraction before inserting that portable reference.
+- Page Open Graph images now prefer a managed media ID; the validated external URL remains a compatibility fallback without pre-implementing Milestone 11 SEO helpers.
 
 Milestone 5 handoff decisions:
 
@@ -750,7 +771,7 @@ Milestone 6 handoff decisions:
 - Keep tag names normalized as rows, relationships ID-based, and complete assignment changes in the same transaction as post updates.
 - Keep public post reads behind `PUBLIC_POSTS_CACHE_TAG`; lifecycle, slug, content, and tag changes must invalidate the archive, details, and RSS.
 - Keep `/feed.xml` limited to published posts and generate absolute links from the centrally validated `APP_URL`.
-- Cover and social image URLs are temporary Milestone 6 bridges. Milestone 8 should replace them with media IDs through the storage abstraction.
+- Post cover and social images now prefer managed media IDs through the storage abstraction; validated external URLs remain compatibility fallbacks.
 - The posts built-in navigation destination is live. Projects are now live through Milestone 7; publications and CV remain owned by later milestones.
 
 Milestone 7 handoff decisions:
@@ -761,5 +782,16 @@ Milestone 7 handoff decisions:
 - Preserve non-negative `project_technologies.sort_order`, even though the current selection UI uses stable alphabetical checkbox order rather than drag reordering.
 - Keep public project reads behind `PUBLIC_PROJECTS_CACHE_TAG` and preserve featured-first then recency ordering.
 - Keep GitHub, demo, and external project URLs limited to validated HTTP(S) links rendered with safe new-tab attributes.
-- Project cover and social image URLs are Milestone 7 bridges. Milestone 8 should migrate them to media IDs through the storage abstraction.
+- Project cover and social images now prefer managed media IDs through the storage abstraction; validated external URLs remain compatibility fallbacks.
 - The projects built-in navigation destination is now live. Publications and CV routes remain owned by Milestones 9 and 10.
+
+Milestone 8 handoff decisions:
+
+- Keep the S3-compatible bucket private. Public files must continue through `/media/[id]` or a documented future signed/CDN design; do not expose bucket credentials or add anonymous bucket policy as a shortcut.
+- Keep the database storage key canonical. Browser-facing URLs are derived from `APP_URL` plus the stable media ID, never persisted as object identity.
+- Keep upload checks server-side and finite: request/file size, allowlisted MIME type, practical extension agreement, magic signature, bounded image dimensions, and generated UUID key.
+- Do not reintroduce a general image parser without reviewing untrusted-input advisories. The current bounded parser reads only the headers required for JPEG, PNG, WebP, and GIF.
+- Keep media mutations independently authenticated. The public media route is read-only and resolves only an existing UUID-backed database row.
+- Deletion sets managed image foreign keys to null. Markdown URLs are portable text and may become broken after deletion, so preserve the explicit warning until reference tracking is designed.
+- Keep the shared CodeMirror picker/paste/drop integration reusable for future publications without adding publication behavior before Milestone 9.
+- Playwright uses the documented webpack development fallback on this Windows host because repeated long Turbopack development runs corrupted the generated task cache; production still validates with the default Turbopack build.

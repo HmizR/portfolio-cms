@@ -8,6 +8,7 @@ import { cache } from "react";
 import { db } from "@/db";
 import { profiles, siteSettings, socialLinks } from "@/db/schema";
 import { defaultAppearance } from "@/features/profile/defaults";
+import { getMediaById } from "@/features/media/queries";
 import {
   appearanceSchema,
   type AppearanceInput,
@@ -47,6 +48,7 @@ export async function getProfileEditorData(
       longBiography: "",
       location: "",
       publicEmail: fallback.email,
+      avatarMediaId: null,
       avatarUrl: null,
       socialLinks: [],
     };
@@ -65,6 +67,7 @@ export async function getProfileEditorData(
     longBiography: profile.longBiography,
     location: profile.location,
     publicEmail: profile.publicEmail,
+    avatarMediaId: profile.avatarMediaId,
     avatarUrl: profile.avatarUrl,
     socialLinks: links.map((link) => ({
       platform: link.platform,
@@ -120,10 +123,11 @@ const getCachedPublicSiteData = unstable_cache(async (): Promise<PublicSiteData>
     .where(eq(socialLinks.profileId, profile.id))
     .orderBy(asc(socialLinks.sortOrder));
 
+  const avatarMedia = profile.avatarMediaId ? await getMediaById(profile.avatarMediaId) : null;
   return {
     appearance,
     owner: {
-      avatarUrl: profile.avatarUrl,
+      avatarUrl: avatarMedia?.url ?? profile.avatarUrl,
       biography: profile.shortBiography,
       email: profile.publicEmail,
       headline: profile.headline,
