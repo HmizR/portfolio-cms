@@ -2,7 +2,7 @@
 
 # PortfolioCMS — Development Progress
 
-Last updated: 2026-08-11
+Last updated: 2026-08-12
 
 This file is the persistent handoff document for ongoing implementation.
 
@@ -16,11 +16,11 @@ Do not use this file as a replacement for requirements or architecture documenta
 
 Current phase:
 
-**Milestone 9 complete / ready for Milestone 10**
+**Milestone 10 complete / ready for Milestone 11**
 
 Overall status:
 
-**The application foundation, public shell, authentication, profile/settings, pages, navigation, posts/RSS, projects, media, publications, education, experience, and skills are implemented and validated. Milestone 10 has not started.**
+**The application foundation through the configurable, print-ready CV is implemented and validated. Milestone 11 has not started.**
 
 ---
 
@@ -401,18 +401,18 @@ Tasks:
 
 ## Milestone 10 — CV
 
-Status: **Not started**
+Status: **Complete**
 
 Tasks:
 
-- [ ] Add CV section configuration
-- [ ] Add migration if required
-- [ ] Implement CV section ordering
-- [ ] Implement visibility
-- [ ] Implement selected project configuration
-- [ ] Build `/cv`
-- [ ] Add print stylesheet
-- [ ] Verify print/PDF output
+- [x] Add CV section configuration
+- [x] Add migration if required
+- [x] Implement CV section ordering
+- [x] Implement visibility
+- [x] Implement selected project configuration
+- [x] Build `/cv`
+- [x] Add print stylesheet
+- [x] Verify print/PDF output
 
 ---
 
@@ -486,20 +486,20 @@ Tasks:
 
 # 6. Current Task
 
-**Milestone 9 — Academic Portfolio is complete. No implementation task is currently in progress.**
+**Milestone 10 — CV is complete. No implementation task is currently in progress.**
 
-Completed academic portfolio work:
+Completed CV work:
 
-1. `publications` implements unique slugs, finite scholarly types, draft/published/archived state, canonical/private-draft Markdown, metadata, and featured ordering.
-2. `publication_authors` stores ordered author rows and replaces the complete assignment transactionally with its publication.
-3. Publication CRUD includes authenticated preview, explicit lifecycle controls, public archive/detail routes, DOI and safe external links, and targeted cache invalidation.
-4. Managed PDF and social-image relationships use `ON DELETE SET NULL`; services independently verify PDF versus image MIME assignments.
-5. Education and experience CRUD supports exact dates, current-state rules, safe links, Markdown descriptions, deletion, and accessible up/down ordering.
-6. Skills CRUD supports categories, visibility, case-insensitive uniqueness inside a category, and accessible ordering without percentage bars.
-7. Admin navigation and the dashboard include academic domains. Timeline and skill rows remain structured sources for later controlled homepage and CV consumers.
-8. Unit and browser coverage validate inputs, author ordering, private PDF delivery, publication lifecycle/public visibility, and structured-record creation.
+1. `cv_sections` stores one seeded row for each finite section type with persistent visibility and unique ordering; `cv_project_selections` stores ordered stable project relationships.
+2. Migration `0009_classy_sentinels.sql` creates the constrained configuration and seeds deterministic section IDs for fresh and test databases.
+3. `/admin/cv` provides authenticated section visibility, accessible up/down ordering, and published-project selection through a complete Zod-validated configuration form.
+4. The CV service validates referenced projects and writes section order, visibility, and project selections in one transaction.
+5. `/cv` renders the configured profile, education, experience, projects, publications, and skills from structured public records, using the shared Markdown renderer for timeline descriptions.
+6. CV mutations and all contributing public-content mutations revalidate `/cv` so the document reflects current structured data.
+7. CV-scoped A4 print styles remove public chrome and controls, preserve readable typography, and avoid splitting entries where practical; browser-native PDF output remains the V1 export path.
+8. Unit and browser coverage validates configuration shape, persistence, ordering, visibility, selected projects, public content, print-mode chrome suppression, and real PDF generation.
 
-Next recommended task: **Milestone 10 — CV**. It has not been started.
+Next recommended task: **Milestone 11 — SEO**. It has not been started.
 
 ---
 
@@ -712,6 +712,22 @@ Milestone 9 — 2026-08-11
 - Real managed-PDF upload and private-bucket delivery: PASS against the running S3-compatible service
 - `npm audit --omit=dev`: unchanged at 5 moderate tooling-only esbuild advisories through Drizzle Kit; no production application runtime path is affected
 
+Milestone 10 — 2026-08-12
+
+- `npm run lint`: PASS
+- `npm run typecheck`: PASS
+- `npm run test`: PASS (20 files, 43 tests; new coverage validates complete CV configuration, finite section types, unique ordering, and project selections)
+- `npm run test:e2e`: PASS (5 Chromium tests; CV coverage persists section ordering/visibility and selected projects, verifies structured public content, emulates print media, and creates a real A4 PDF)
+- `npm run build`: PASS (28 generated pages; `/admin/cv` and `/cv` compile as dynamic routes)
+- `npm run db:generate`: PASS (`drizzle/0009_classy_sentinels.sql`; final schema check reports no further changes)
+- `npm run db:migrate`: PASS against the development PostgreSQL service
+- Isolated Playwright database creation, all-migration application, reseeding, and reset: PASS
+- `npm run db:check`: PASS against the healthy Compose PostgreSQL service
+- `docker compose config --quiet`: PASS
+- Compose `postgres` and `storage` services: RUNNING and HEALTHY
+- Browser-native print/PDF output: PASS (valid `%PDF` A4 document generated by Chromium)
+- Dependency audit status is unchanged from Milestone 9 because this milestone added no packages
+
 ---
 
 # 11. Important Handoff Notes
@@ -723,7 +739,7 @@ Any future coding session should:
 3. Read `ARCHITECTURE.md`.
 4. Read this file.
 5. Inspect the repository before making changes.
-6. Begin Milestone 10 only when it is the requested scope.
+6. Begin Milestone 11 only when it is the requested scope.
 7. Avoid prematurely implementing later milestones.
 8. Update this file before ending meaningful work.
 
@@ -820,4 +836,14 @@ Milestone 9 handoff decisions:
 - Keep public publication reads behind `PUBLIC_PUBLICATIONS_CACHE_TAG`, with featured-first and publication-date ordering plus targeted invalidation after public-facing mutations.
 - Keep education and experience as structured timeline rows with exact dates, current-state rules, Markdown descriptions, and accessible ordering. They are data sources for later controlled homepage and CV consumers, not CV layout configuration themselves.
 - Keep skill categories administrator-defined and skills qualitative; do not add percentage or proficiency bars.
-- The publications built-in navigation destination is now live. CV remains owned by Milestone 10.
+- The publications built-in navigation destination is now live. CV is now live through Milestone 10.
+
+Milestone 10 handoff decisions:
+
+- Keep CV sections finite and seeded. Do not turn the configuration into an arbitrary visual page builder or template registry.
+- Keep visibility and ordering in `cv_sections`, and keep selected projects as normalized ID relationships in `cv_project_selections`; do not persist public URLs or project snapshots in CV configuration.
+- Submit and validate the complete configuration, then update it transactionally so section order and project selection cannot diverge.
+- Only published projects may be selected or rendered. Project deletion cascades its CV selection, while project lifecycle/content mutations revalidate `/cv`.
+- Keep `/cv` server-rendered from the existing structured profile, academic, project, publication, and skill records. Timeline Markdown must continue through the one shared renderer.
+- Keep print behavior CSS-scoped to the CV layout and use browser-native print/PDF output. Server-generated PDFs and multiple CV templates remain deferred features.
+- Milestone 11 owns shared metadata helpers and comprehensive SEO. The CV route currently has only a conservative static title/description and must not grow one-off SEO infrastructure.

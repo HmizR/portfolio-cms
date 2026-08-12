@@ -163,3 +163,18 @@ html {
     transition-duration: 0.01ms !important;
   }
 }
+
+@page { margin: 14mm; size: A4; }
+@media print {
+  body { background: white; color: black; }
+  .public-site[data-print-layout="cv"] > a,
+  .public-site[data-print-layout="cv"] > header,
+  .public-site[data-print-layout="cv"] > footer,
+  .public-site[data-print-layout="cv"] .cv-toolbar { display: none !important; }
+  .public-site[data-print-layout="cv"] > div { display: block; max-width: none; padding: 0; }
+  .public-site[data-print-layout="cv"] main { width: 100%; }
+  .public-site[data-print-layout="cv"] .cv-document { color: black; font-size: 10.5pt; }
+  .public-site[data-print-layout="cv"] .cv-section,
+  .public-site[data-print-layout="cv"] .cv-entry { break-inside: avoid; }
+  .public-site[data-print-layout="cv"] a { color: inherit; text-decoration-color: #777; }
+}

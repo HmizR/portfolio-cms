@@ -1,4 +1,4 @@
-import { BookOpen, BriefcaseBusiness, ExternalLink, FileText, FolderKanban, GraduationCap, ImageIcon, LayoutDashboard, Menu, Newspaper, Palette, Sparkles, UserRound } from "lucide-react";
+import { BookOpen, BriefcaseBusiness, ExternalLink, FileText, FolderKanban, GraduationCap, ImageIcon, LayoutDashboard, Menu, Newspaper, Palette, ScrollText, Sparkles, UserRound } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -31,6 +31,7 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
           <Link className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold hover:bg-slate-800" href="/admin/education"><GraduationCap aria-hidden="true" className="size-4" /> Education</Link>
           <Link className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold hover:bg-slate-800" href="/admin/experience"><BriefcaseBusiness aria-hidden="true" className="size-4" /> Experience</Link>
           <Link className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold hover:bg-slate-800" href="/admin/skills"><Sparkles aria-hidden="true" className="size-4" /> Skills</Link>
+          <Link className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold hover:bg-slate-800" href="/admin/cv"><ScrollText aria-hidden="true" className="size-4" /> CV</Link>
           <p className="px-3 pb-1 pt-5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Website</p>
           <Link className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold hover:bg-slate-800" href="/admin/profile"><UserRound aria-hidden="true" className="size-4" /> Profile</Link>
           <Link className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold hover:bg-slate-800" href="/admin/navigation"><Menu aria-hidden="true" className="size-4" /> Navigation</Link>

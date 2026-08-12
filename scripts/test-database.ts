@@ -59,8 +59,15 @@ export async function prepareTestDatabase(): Promise<string> {
   try {
     await migrate(database, { migrationsFolder: "drizzle" });
     await pool.query(
-      "truncate table publication_authors, publications, education, experience, skills, project_technologies, technologies, projects, post_tags, tags, posts, navigation_items, pages, site_settings, social_links, profiles, media, rate_limits, verifications, sessions, accounts, users restart identity cascade",
+      "truncate table cv_project_selections, cv_sections, publication_authors, publications, education, experience, skills, project_technologies, technologies, projects, post_tags, tags, posts, navigation_items, pages, site_settings, social_links, profiles, media, rate_limits, verifications, sessions, accounts, users restart identity cascade",
     );
+    await pool.query(`insert into cv_sections (id, section_type, sort_order, is_visible) values
+      ('10000000-0000-4000-8000-000000000001', 'profile', 0, true),
+      ('10000000-0000-4000-8000-000000000002', 'education', 1, true),
+      ('10000000-0000-4000-8000-000000000003', 'experience', 2, true),
+      ('10000000-0000-4000-8000-000000000004', 'projects', 3, true),
+      ('10000000-0000-4000-8000-000000000005', 'publications', 4, true),
+      ('10000000-0000-4000-8000-000000000006', 'skills', 5, true)`);
   } finally {
     await pool.end();
   }

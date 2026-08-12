@@ -535,6 +535,38 @@ export const skills = pgTable(
   ],
 );
 
+export const cvSections = pgTable(
+  "cv_sections",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    sectionType: text("section_type").notNull(),
+    sortOrder: integer("sort_order").notNull(),
+    isVisible: boolean("is_visible").default(true).notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("cv_sections_type_unique").on(table.sectionType),
+    uniqueIndex("cv_sections_sort_order_unique").on(table.sortOrder),
+    check("cv_sections_type_check", sql`${table.sectionType} in ('profile', 'education', 'experience', 'projects', 'publications', 'skills')`),
+    check("cv_sections_sort_order_check", sql`${table.sortOrder} >= 0`),
+  ],
+);
+
+export const cvProjectSelections = pgTable(
+  "cv_project_selections",
+  {
+    cvSectionId: uuid("cv_section_id").notNull().references(() => cvSections.id, { onDelete: "cascade" }),
+    projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+    sortOrder: integer("sort_order").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.cvSectionId, table.projectId], name: "cv_project_selections_section_project_pk" }),
+    uniqueIndex("cv_project_selections_section_order_unique").on(table.cvSectionId, table.sortOrder),
+    index("cv_project_selections_project_id_index").on(table.projectId),
+    check("cv_project_selections_sort_order_check", sql`${table.sortOrder} >= 0`),
+  ],
+);
+
 export const authSchema = {
   user: users,
   session: sessions,

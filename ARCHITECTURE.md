@@ -1053,6 +1053,8 @@ Do not allow arbitrary executable templates.
 
 Use public reusable components plus print-specific presentation.
 
+Milestone 10 implements one seeded row per finite section type (`profile`, `education`, `experience`, `projects`, `publications`, and `skills`). Visibility and order are stored in `cv_sections`; selected projects use the normalized `cv_project_selections` relationship and stable project IDs rather than configuration JSON. The admin submits the complete configuration through one authenticated, Zod-validated server action, and the service replaces ordering, visibility, and project selection transactionally. `/cv` is server-rendered from structured public records and uses the shared Markdown renderer for timeline descriptions. CV-specific print selectors remove site chrome and controls, preserve the document content, avoid splitting entries where practical, and rely on browser-native PDF output. No arbitrary templates or server-generated PDF service are introduced.
+
 ---
 
 # 35. Styling Architecture

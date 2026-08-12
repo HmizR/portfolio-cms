@@ -1,6 +1,6 @@
 # PortfolioCMS
 
-PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, database-backed profile/settings, custom Markdown pages, dynamic navigation, chronological posts with RSS, featured projects, an S3-backed media library, publications, and structured education, experience, and skills.
+PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, database-backed profile/settings, custom Markdown pages, dynamic navigation, chronological posts with RSS, featured projects, an S3-backed media library, publications, structured academic records, and a configurable print-ready CV.
 
 ## Foundation stack
 
@@ -61,6 +61,10 @@ Use `/admin/media` to upload, search, select, describe, copy, and delete JPEG, P
 ## Academic portfolio
 
 Use `/admin/publications` to manage publishable scholarly work, ordered authors, DOI/external links, optional Markdown, and managed PDF attachments. Published work appears at `/publications`. Education, experience, and categorized visible skills are managed through their corresponding admin routes with accessible ordering controls. See `docs/academic-portfolio.md` for lifecycle, validation, ordering, and storage details.
+
+## Curriculum vitae
+
+Use `/admin/cv` to enable, hide, and reorder the finite CV sections and choose published projects. The public `/cv` route is generated from structured profile, education, experience, project, publication, and skill data. Its print action uses browser-native printing with an A4 stylesheet that removes navigation, footer, sidebar, and controls. See `docs/cv.md` for configuration and print behavior.
 
 ## Validation
 

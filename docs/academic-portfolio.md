@@ -16,7 +16,7 @@ PDF attachments reference an existing managed `application/pdf` media row. Socia
 
 Use `/admin/education` and `/admin/experience` to manage structured timeline records. Both support optional exact dates, location, safe organization links, Markdown descriptions, current-state flags, deletion, and explicit up/down ordering. Database constraints reject negative order, inverted date ranges, and end dates on current records.
 
-These records are structured sources for the controlled homepage and CV consumers in later milestones. Milestone 9 does not add a standalone public timeline route or begin CV configuration.
+These records are structured sources for controlled consumers. Milestone 10 now renders enabled education and experience sections on `/cv`; there is still no standalone public timeline route.
 
 ## Skills
 
@@ -24,4 +24,4 @@ Use `/admin/skills` to manage a skill name, free-text category, visibility, and 
 
 ## Cache and authorization
 
-Every academic mutation independently calls `requireAdmin()`. Public publication reads use the `public-publications` cache tag; publication lifecycle and content changes invalidate the archive and affected detail routes. Education, experience, and skills are currently admin-only structured inputs and are not put in the public JavaScript bundle.
+Every academic mutation independently calls `requireAdmin()`. Public publication reads use the `public-publications` cache tag; publication lifecycle and content changes invalidate the archive, affected detail routes, and `/cv`. Education, experience, and skills are server-rendered into enabled CV sections without adding their data to the public JavaScript bundle, and their mutations revalidate `/cv`.

@@ -9,13 +9,14 @@ import type { PublicSiteData } from "@/features/profile/queries";
 interface PublicShellProps {
   children: ReactNode;
   navigation: PublicNavigationItem[];
+  printLayout?: "cv";
   showSidebar?: boolean;
   site: PublicSiteData;
 }
 
-export function PublicShell({ children, navigation, showSidebar = true, site }: PublicShellProps) {
+export function PublicShell({ children, navigation, printLayout, showSidebar = true, site }: PublicShellProps) {
   return (
-    <div className="public-site flex min-h-screen flex-col" data-accent={site.appearance.accentColor} data-content-width={site.appearance.contentWidth} data-typography={site.appearance.typography}>
+    <div className="public-site flex min-h-screen flex-col" data-accent={site.appearance.accentColor} data-content-width={site.appearance.contentWidth} data-print-layout={printLayout} data-typography={site.appearance.typography}>
       <a
         className="fixed left-4 top-3 z-50 -translate-y-20 rounded-sm bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-transform focus:translate-y-0"
         href="#main-content"

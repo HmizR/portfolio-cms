@@ -54,6 +54,7 @@ export async function updateProfileAction(
 
   updateTag(PUBLIC_SITE_CACHE_TAG);
   revalidatePath("/", "layout");
+  revalidatePath("/cv");
   revalidatePath("/admin/profile");
   return { status: "success", message: "Profile and social links saved." };
 }
@@ -89,6 +90,7 @@ export async function updateAppearanceAction(
 
   updateTag(PUBLIC_SITE_CACHE_TAG);
   revalidatePath("/", "layout");
+  revalidatePath("/cv");
   revalidatePath("/admin/appearance");
   return {
     status: "success",
