@@ -1005,6 +1005,8 @@ Outputs:
 
 Avoid duplicating metadata-building logic across routes.
 
+Milestone 11 implements these outputs in `src/features/seo`. `APP_URL` remains the centrally validated canonical base URL; the singleton site settings own the managed default social-image relationship and optional X/Twitter handle alongside the existing site title and description. Content-specific values override global defaults through one metadata builder. Homepage, post, and publication JSON-LD use a shared serializer that escapes `<` before script injection. Sitemap generation reads only published content, and robots excludes protected authentication, admin, setup, and preview paths.
+
 ---
 
 # 33. Export Architecture

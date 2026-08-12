@@ -8,6 +8,8 @@ import { PagePresentation } from "@/features/pages/page-presentation";
 import { getPublishedPageBySlug } from "@/features/pages/queries";
 import { pageSlugSchema } from "@/features/pages/validation";
 import { getPublicSiteData } from "@/features/profile/queries";
+import { buildMetadata } from "@/features/seo/metadata";
+import { getGlobalSeoSettings } from "@/features/seo/queries";
 import { renderMarkdown } from "@/lib/markdown/render";
 
 interface PublicPageProps {
@@ -21,12 +23,7 @@ export async function generateMetadata({ params }: PublicPageProps): Promise<Met
   const page = await getPublishedPageBySlug(parsed.data);
   if (!page) return {};
   const ogImageUrl = await getMediaUrlById(page.ogMediaId) ?? page.ogImageUrl;
-  return {
-    title: page.seoTitle ?? page.title,
-    description: (page.seoDescription ?? page.excerpt) || undefined,
-    alternates: page.canonicalUrl ? { canonical: page.canonicalUrl } : undefined,
-    openGraph: ogImageUrl ? { images: [{ url: ogImageUrl }] } : undefined,
-  };
+  return buildMetadata(await getGlobalSeoSettings(), { canonicalPath: `/${page.slug}`, canonicalUrl: page.canonicalUrl, title: page.seoTitle ?? page.title, description: page.seoDescription ?? page.excerpt, imageUrl: ogImageUrl });
 }
 
 export default async function PublicPage({ params }: PublicPageProps) {

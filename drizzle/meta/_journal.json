@@ -71,6 +71,13 @@
       "when": 1786442141979,
       "tag": "0009_classy_sentinels",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1786518749764,
+      "tag": "0010_happy_swordsman",
+      "breakpoints": true
     }
   ]
 }

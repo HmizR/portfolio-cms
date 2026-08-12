@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-import { getPublicSiteData } from "@/features/profile/queries";
+import { buildMetadata } from "@/features/seo/metadata";
+import { getGlobalSeoSettings } from "@/features/seo/queries";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const site = await getPublicSiteData();
-  return { title: site.appearance.siteTitle, description: site.appearance.siteDescription };
+  const settings = await getGlobalSeoSettings();
+  return { ...buildMetadata(settings, { canonicalPath: "/" }), metadataBase: new URL(settings.baseUrl), title: { default: settings.siteTitle, template: `%s | ${settings.siteTitle}` } };
 }
 
 export default function PublicLayout({ children }: Readonly<{ children: ReactNode }>) {

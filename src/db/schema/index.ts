@@ -188,6 +188,8 @@ export const siteSettings = pgTable(
     singletonKey: integer("singleton_key").default(1).notNull(),
     siteTitle: text("site_title").notNull(),
     siteDescription: text("site_description").default("").notNull(),
+    defaultOgMediaId: uuid("default_og_media_id").references(() => media.id, { onDelete: "set null" }),
+    twitterHandle: text("twitter_handle"),
     accentColor: text("accent_color").default("teal").notNull(),
     contentWidth: text("content_width").default("standard").notNull(),
     profileImageShape: text("profile_image_shape").default("circle").notNull(),
@@ -196,6 +198,7 @@ export const siteSettings = pgTable(
   },
   (table) => [
     uniqueIndex("site_settings_singleton_key_unique").on(table.singletonKey),
+    index("site_settings_default_og_media_id_index").on(table.defaultOgMediaId),
     check("site_settings_singleton_key_check", sql`${table.singletonKey} = 1`),
     check(
       "site_settings_accent_color_check",

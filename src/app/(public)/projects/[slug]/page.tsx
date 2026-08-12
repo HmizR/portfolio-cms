@@ -8,6 +8,8 @@ import { ProjectPresentation } from "@/features/projects/project-presentation";
 import { getPublishedProjectBySlug } from "@/features/projects/queries";
 import { projectSlugSchema } from "@/features/projects/validation";
 import { getPublicSiteData } from "@/features/profile/queries";
+import { buildMetadata } from "@/features/seo/metadata";
+import { getGlobalSeoSettings } from "@/features/seo/queries";
 import { renderMarkdown } from "@/lib/markdown/render";
 
 interface Props { params: Promise<{ slug: string }> }
@@ -19,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const project = await getPublishedProjectBySlug(parsed.data);
   if (!project) return {};
   const ogImageUrl = await getMediaUrlById(project.ogMediaId) ?? project.ogImageUrl;
-  return { title: project.seoTitle ?? project.title, description: (project.seoDescription ?? project.summary) || undefined, alternates: project.canonicalUrl ? { canonical: project.canonicalUrl } : undefined, openGraph: ogImageUrl ? { images: [{ url: ogImageUrl }] } : undefined };
+  return buildMetadata(await getGlobalSeoSettings(), { canonicalPath: `/projects/${project.slug}`, canonicalUrl: project.canonicalUrl, title: project.seoTitle ?? project.title, description: project.seoDescription ?? project.summary, imageUrl: ogImageUrl });
 }
 
 export default async function ProjectPage({ params }: Props) {

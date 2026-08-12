@@ -11,6 +11,10 @@ test("renders the desktop public shell and health endpoint", async ({ page, requ
   await expect(page.getByRole("complementary", { name: "Dr. Maya Chen" })).toBeVisible();
   await expect(page.getByRole("contentinfo")).toContainText("Built with PortfolioCMS");
   await expect(page).toHaveTitle("Maya Chen Research");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "http://127.0.0.1:3100");
+  const structuredData = await page.locator('script[type="application/ld+json"]').textContent();
+  expect(structuredData).toContain('"WebSite"');
+  expect(structuredData).toContain('"Person"');
 
   const skipLink = page.getByRole("link", { name: "Skip to main content" });
   await skipLink.focus();
@@ -26,6 +30,14 @@ test("renders the desktop public shell and health endpoint", async ({ page, requ
   const response = await request.get("/api/health");
   expect(response.ok()).toBe(true);
   await expect(response.json()).resolves.toEqual({ status: "ok" });
+
+  const sitemap = await request.get("/sitemap.xml");
+  expect(sitemap.ok()).toBe(true);
+  expect(await sitemap.text()).toContain("http://127.0.0.1:3100/cv");
+  const robots = await request.get("/robots.txt");
+  expect(robots.ok()).toBe(true);
+  expect(await robots.text()).toContain("Disallow: /admin/");
+  expect(await robots.text()).toContain("Sitemap: http://127.0.0.1:3100/sitemap.xml");
 });
 
 test("provides a keyboard-accessible mobile navigation", async ({ page }) => {

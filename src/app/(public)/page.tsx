@@ -1,6 +1,9 @@
 import { PublicShell } from "@/components/public/public-shell";
+import { JsonLd } from "@/components/seo/json-ld";
 import { getPublicNavigation } from "@/features/navigation/queries";
 import { getPublicSiteData } from "@/features/profile/queries";
+import { personJsonLd, websiteJsonLd } from "@/features/seo/metadata";
+import { getGlobalSeoSettings } from "@/features/seo/queries";
 
 const researchDirections = [
   {
@@ -21,9 +24,10 @@ const researchDirections = [
 ];
 
 export default async function Home() {
-  const [navigation, site] = await Promise.all([getPublicNavigation(), getPublicSiteData()]);
+  const [navigation, site, seo] = await Promise.all([getPublicNavigation(), getPublicSiteData(), getGlobalSeoSettings()]);
   return (
     <PublicShell navigation={navigation} site={site}>
+      <JsonLd data={[websiteJsonLd(seo), personJsonLd(seo, { name: site.owner.name, description: site.owner.biography, image: site.owner.avatarUrl, sameAs: site.socialLinks.map((link) => link.href) })]} />
       <article>
       <header className="border-b border-slate-200 pb-9 sm:pb-11">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--public-accent)]">

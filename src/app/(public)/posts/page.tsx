@@ -6,7 +6,9 @@ import { getPublicNavigation } from "@/features/navigation/queries";
 import { listPublishedPosts } from "@/features/posts/queries";
 import { getPublicSiteData } from "@/features/profile/queries";
 
-export const metadata: Metadata = { title: "Posts" };
+import { buildMetadata } from "@/features/seo/metadata";
+import { getGlobalSeoSettings } from "@/features/seo/queries";
+export async function generateMetadata(): Promise<Metadata> { return buildMetadata(await getGlobalSeoSettings(), { canonicalPath: "/posts", title: "Posts", description: "Writing and updates." }); }
 
 function groupPostsByYear(posts: Awaited<ReturnType<typeof listPublishedPosts>>) {
   const groups = new Map<string, typeof posts>();
