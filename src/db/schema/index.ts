@@ -6,6 +6,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   pgTable,
   primaryKey,
   text,
@@ -244,6 +245,27 @@ export const pages = pgTable(
     index("pages_status_published_at_index").on(table.status, table.publishedAt),
     index("pages_og_media_id_index").on(table.ogMediaId),
     check("pages_status_check", sql`${table.status} in ('draft', 'published', 'archived')`),
+  ],
+);
+
+export const homepageSections = pgTable(
+  "homepage_sections",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    sectionType: text("section_type").notNull(),
+    sortOrder: integer("sort_order").notNull(),
+    isVisible: boolean("is_visible").default(true).notNull(),
+    configurationJson: jsonb("configuration_json").notNull(),
+    pageId: uuid("page_id").references(() => pages.id, { onDelete: "set null" }),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("homepage_sections_type_unique").on(table.sectionType),
+    uniqueIndex("homepage_sections_sort_order_unique").on(table.sortOrder),
+    index("homepage_sections_page_id_index").on(table.pageId),
+    check("homepage_sections_sort_order_check", sql`${table.sortOrder} >= 0`),
+    check("homepage_sections_type_check", sql`${table.sectionType} in ('markdown', 'featured_projects', 'recent_posts', 'featured_publications', 'education', 'experience', 'page_excerpt')`),
+    check("homepage_sections_page_shape_check", sql`${table.sectionType} = 'page_excerpt' or ${table.pageId} is null`),
   ],
 );
 

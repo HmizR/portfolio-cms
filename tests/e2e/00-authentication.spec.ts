@@ -426,6 +426,7 @@ test.setTimeout(900_000);
   await page.getByLabel("Publication date").fill("2026-08-11");
   await page.getByLabel("Venue").fill("Conference on Responsible Computing");
   await page.getByLabel("Abstract").fill("A practical architecture for accountable public-interest systems.");
+  await page.getByLabel("Featured publication").check();
   await page.getByLabel("DOI").fill("10.1000/accountable-ai");
   await page.getByRole("button", { name: "Add author" }).click();
   await page.getByLabel("Author 1 name").fill("Maya Chen");
@@ -447,6 +448,33 @@ test.setTimeout(900_000);
   await expect(page.getByRole("link", { name: /PDF/ })).toHaveAttribute("href", /\/media\/[0-9a-f-]+/);
   await expect(page.getByRole("link", { name: "Maya Chen", exact: true })).toBeVisible();
   await expect(page.locator("article header")).toContainText("Grace Hopper, Maya Chen");
+
+  await page.goto(editRegularProjectUrl);
+  await page.getByLabel("Featured project").check();
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("Project saved.")).toBeVisible();
+
+  await page.goto("/admin/homepage");
+  await expect(page.getByRole("heading", { name: "Homepage" })).toBeVisible();
+  const markdownSection = page.locator('[data-section-type="markdown"]');
+  await markdownSection.getByLabel("Markdown introduction heading").fill("Research overview");
+  await markdownSection.locator(".cm-content").fill("## Human-centered systems\n\nI build **accountable research tools** with public-interest partners.");
+  await page.getByRole("button", { name: "Show Education" }).click();
+  await page.getByRole("button", { name: "Show Experience" }).click();
+  await page.getByRole("button", { name: "Move Experience up" }).click();
+  await page.getByRole("button", { name: "Save homepage" }).click();
+  await expect(page.getByText("Homepage configuration saved.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Hide Education" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Hide Experience" })).toBeVisible();
+  await expect(page.locator('[data-section-type="experience"]')).toHaveAttribute("data-section-type", "experience");
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Research overview" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Human-centered systems" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Archive Toolkit" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Accountable AI Infrastructure" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Experience" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Education" })).toBeVisible();
 
   await page.goto("/admin/cv");
   await expect(page.getByRole("heading", { name: "Curriculum vitae" })).toBeVisible();
@@ -520,6 +548,15 @@ test.setTimeout(900_000);
   await expect(page.getByText("Page published.")).toBeVisible();
   await page.goto("/media-research-note");
   await expect(page.getByRole("img", { name: "Research workflow diagram" })).toBeVisible();
+
+  await page.goto("/admin/homepage");
+  await page.getByLabel("Custom page excerpt page").selectOption({ label: "Media research note" });
+  await page.getByRole("button", { name: "Show Custom page excerpt" }).click();
+  await page.getByRole("button", { name: "Save homepage" }).click();
+  await expect(page.getByText("Homepage configuration saved.")).toBeVisible();
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "More about my work" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Media research note" })).toBeVisible();
 
   await page.goto("/admin/media");
   await page.getByRole("button", { name: /research-figure\.png/ }).click();

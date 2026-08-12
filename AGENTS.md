@@ -854,6 +854,25 @@ Replace public fixtures with database data.
 - Sitemap
 - Robots
 
+## Milestone 11.1 — Configurable Homepage Remediation
+
+- Homepage section schema
+- Drizzle migration
+- Controlled section types
+- `/admin/homepage`
+- Visibility
+- Accessible persistent ordering
+- Type-specific configuration
+- Database-driven `/`
+- Shared Markdown rendering
+- Public-content filtering
+- Cache invalidation
+- Tests and documentation
+
+This milestone closes an existing V1 product-requirement gap discovered after Milestone 11. Complete
+it before Milestone 12. Do not expand it into a visual page builder, theme system, or generic
+component registry.
+
 ## Milestone 12 — Portability
 
 - Individual Markdown export

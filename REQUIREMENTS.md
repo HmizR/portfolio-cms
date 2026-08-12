@@ -191,6 +191,16 @@ The administrator must be able to:
 - Enable or disable sections.
 - Configure reasonable options such as item counts where applicable.
 
+Homepage content and configuration must be stored in PostgreSQL and managed through
+`/admin/homepage`. The public `/` route must not depend on hardcoded portfolio copy once this
+feature is implemented.
+
+Section configuration must use controlled, type-specific validation. References to custom pages
+or selected content must use stable database IDs rather than persisted slugs or public URLs.
+Sections that derive items from posts, projects, publications, education, or experience must show
+only records eligible for public display. Markdown introduction content must use the shared
+Markdown rendering pipeline.
+
 Do not implement arbitrary free-form visual composition.
 
 ---

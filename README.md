@@ -1,6 +1,6 @@
 # PortfolioCMS
 
-PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, database-backed profile/settings, custom Markdown pages, dynamic navigation, chronological posts with RSS, featured projects, an S3-backed media library, publications, structured academic records, a configurable print-ready CV, and database-driven SEO metadata.
+PortfolioCMS is a self-hosted academic and professional portfolio CMS inspired by the restrained information design of Academic Pages. The repository currently includes the application foundation, responsive public shell, secure single-administrator authentication, database-backed profile/settings and homepage, custom Markdown pages, dynamic navigation, chronological posts with RSS, featured projects, an S3-backed media library, publications, structured academic records, a configurable print-ready CV, and database-driven SEO metadata.
 
 ## Foundation stack
 
@@ -66,6 +66,10 @@ Use `/admin/publications` to manage publishable scholarly work, ordered authors,
 
 Use `/admin/cv` to enable, hide, and reorder the finite CV sections and choose published projects. The public `/cv` route is generated from structured profile, education, experience, project, publication, and skill data. Its print action uses browser-native printing with an A4 stylesheet that removes navigation, footer, sidebar, and controls. See `docs/cv.md` for configuration and print behavior.
 
+## Homepage
+
+Use `/admin/homepage` to edit the Markdown introduction, show or hide controlled content sections, choose bounded item counts, select a published custom page excerpt, and persist accessible section ordering. The public `/` route renders these settings from PostgreSQL and includes only publicly eligible source content. See `docs/homepage.md` for section behavior and cache invalidation.
+
 ## SEO
 
 Use `/admin/seo` to choose a default social image and optional X/Twitter handle; site title and default description remain under Appearance. Public routes share canonical, Open Graph, X/Twitter, and structured-data helpers. Published content appears in `/sitemap.xml`, and `/robots.txt` keeps protected surfaces out of crawler paths. See `docs/seo.md` for configuration and output details.
@@ -98,5 +102,6 @@ npm run build
 - `docs/media.md` documents the media library, private object delivery, upload security, managed image fields, and editor integration.
 - `docs/academic-portfolio.md` documents publications, ordered authors, PDF attachments, education, experience, and skills.
 - `docs/seo.md` documents metadata defaults, content overrides, structured data, sitemap, and robots behavior.
+- `docs/homepage.md` documents controlled homepage sections, configuration, public filtering, and caching.
 
 Do not begin a later milestone until the current milestone passes its required checks.

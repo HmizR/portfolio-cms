@@ -16,11 +16,11 @@ Do not use this file as a replacement for requirements or architecture documenta
 
 Current phase:
 
-**Milestone 11 complete / ready for Milestone 12**
+**Milestone 11.1 complete / ready for Milestone 12**
 
 Overall status:
 
-**The application foundation through comprehensive database-driven SEO is implemented and validated. Milestone 12 has not started.**
+**The application foundation through the configurable database-driven homepage is implemented and validated. Milestone 12 has not started.**
 
 ---
 
@@ -437,6 +437,61 @@ Tasks:
 
 ---
 
+## Milestone 11.1 — Configurable Homepage Remediation
+
+Status: **Complete**
+
+Reason:
+
+The public `/` route still contains hardcoded portfolio content even though the product requirements
+define administrator-managed, database-backed homepage sections. This bounded remediation closes
+that gap before later milestones proceed.
+
+Tasks:
+
+- [x] Add constrained `homepage_sections` schema
+- [x] Generate and inspect a Drizzle migration
+- [x] Define finite, type-specific Zod configuration schemas
+- [x] Seed or otherwise provide a useful initial controlled section configuration
+- [x] Build protected `/admin/homepage`
+- [x] Add section enable/disable controls
+- [x] Add persistent accessible section ordering
+- [x] Configure Markdown introduction sections
+- [x] Configure featured projects sections
+- [x] Configure recent posts sections
+- [x] Configure featured publications sections
+- [x] Configure education sections
+- [x] Configure experience sections
+- [x] Configure custom-page excerpt sections using stable page IDs
+- [x] Replace hardcoded `/` content with database-driven section rendering
+- [x] Reuse the shared Markdown renderer
+- [x] Restrict derived content to publicly eligible records
+- [x] Add homepage cache tagging and targeted invalidation
+- [x] Add unit, integration, and critical browser coverage
+- [x] Update architecture, README, homepage documentation, and this progress file
+
+Completion checks:
+
+- [x] `npm run lint`
+- [x] `npm run typecheck`
+- [x] `npm run test`
+- [x] `npm run test:e2e`
+- [x] `npm run build`
+- [x] `npm run db:generate` reports no schema drift after migration generation
+- [x] `npm run db:migrate` passes against development PostgreSQL
+- [x] Fresh isolated Playwright database applies all migrations successfully
+- [x] `npm run db:check`
+
+Out of scope:
+
+- Generic visual page builder
+- Arbitrary component registry
+- Arbitrary HTML or CSS configuration
+- Theme marketplace or plugin API
+- Homepage-specific duplicates of existing Markdown or SEO pipelines
+
+---
+
 ## Milestone 12 — Portability
 
 Status: **Not started**
@@ -486,17 +541,17 @@ Tasks:
 
 # 6. Current Task
 
-**Milestone 11 — SEO is complete. No implementation task is currently in progress.**
+**Milestone 11.1 — Configurable Homepage Remediation is complete. No implementation task is currently in progress.**
 
-Completed SEO work:
+Completed homepage work:
 
-1. `/admin/seo` provides authenticated, Zod-validated default social-image and X/Twitter configuration while Appearance remains the owner of site title and description.
-2. Migration `0010_happy_swordsman.sql` adds the nullable managed default-image relationship with `ON DELETE SET NULL` and the optional social handle.
-3. One SEO helper builds canonical, Open Graph, and X/Twitter metadata from global settings plus content-specific overrides for homepage, pages, posts, projects, publications, archives, and CV.
-4. `APP_URL` remains the centrally validated base URL for canonical URLs, sitemap entries, robots, and structured data.
-5. The homepage emits `WebSite` and `Person` JSON-LD; posts emit `BlogPosting`; publications emit `ScholarlyArticle`; shared serialization escapes `<` against script injection.
-6. `/sitemap.xml` includes public indexes, CV, and published content only; `/robots.txt` advertises it and excludes admin, authentication, setup, and preview routes.
-7. Unit and browser coverage validates defaults, overrides, canonical URLs, social metadata, safe JSON-LD, sitemap, and robots output.
+1. `homepage_sections` stores one row for each finite section type with unique persistent ordering, visibility, strictly validated JSON options, and a stable nullable page relationship.
+2. Migration `0011_tranquil_lily_hollister.sql` creates the constrained table and seeds restrained, usable defaults for existing and fresh installations.
+3. `/admin/homepage` provides authenticated explicit-save editing, shared CodeMirror Markdown authoring and preview, bounded item counts, page selection, visibility, and accessible ordering controls.
+4. `/` renders visible sections from PostgreSQL in configured order and no longer contains hardcoded portfolio copy.
+5. Derived sections include only published posts, featured published projects/publications, structured education/experience, and a currently published selected page.
+6. Homepage configuration uses a dedicated cache tag; configuration and contributing source-content mutations revalidate `/` without disabling caching globally.
+7. Unit and browser coverage validates configuration shape, persistence, ordering, filtering, Markdown, source sections, custom-page identity, fresh migration application, and public rendering.
 
 Next recommended task: **Milestone 12 — Portability**. It has not been started.
 
@@ -741,6 +796,19 @@ Milestone 11 — 2026-08-12
 - Playwright Chromium 151 was installed after the updated Playwright package reported its browser binary missing; the full suite then passed
 - No dependencies or environment variables were added
 
+Milestone 11.1 — 2026-08-12
+
+- `npm run lint`: PASS
+- `npm run typecheck`: PASS
+- `npm run test`: PASS (23 files, 52 tests; homepage coverage validates the complete finite section set, duplicate/missing types, and item-count bounds)
+- `npm run test:e2e`: PASS (5 Chromium tests; homepage coverage edits Markdown, visibility, ordering, counts, featured sources, timelines, and a stable custom-page excerpt, then verifies public rendering and persistence)
+- `npm run build`: PASS (32 generated pages; `/admin/homepage` and the database-driven `/` compile as dynamic routes)
+- `npm run db:generate`: PASS (`drizzle/0011_tranquil_lily_hollister.sql`; migration inspected and seeded)
+- `npm run db:migrate`: PASS against the development PostgreSQL service
+- Isolated Playwright database creation, all-migration application, homepage reseeding, and reset: PASS
+- `npm run db:check`: PASS against the healthy Compose PostgreSQL service
+- No dependencies or environment variables were added
+
 ---
 
 # 11. Important Handoff Notes
@@ -869,3 +937,12 @@ Milestone 11 handoff decisions:
 - Keep global and content social images as managed media IDs where available. The default relationship uses `ON DELETE SET NULL` and safely falls back to metadata without an image.
 - Emit only accurate structured-data types. Preserve `<` escaping in the shared JSON-LD serializer before placing database-derived strings in a script tag.
 - Keep sitemap membership limited to published public content. Draft, archived, preview, admin, setup, and authentication surfaces must not become indexable.
+
+Milestone 11.1 handoff decisions:
+
+- Keep the homepage section set finite and represented by one seeded row per type. Do not evolve it into a generic page builder or component registry.
+- Keep complete-list validation and transactional two-phase ordering so visibility, configuration, and positions cannot partially diverge.
+- Keep section-specific JSON behind the discriminated Zod schema. Internal custom-page identity belongs in the `page_id` foreign key, never in a persisted slug or URL.
+- Keep homepage Markdown on the shared CodeMirror and `src/lib/markdown/render.ts` pipeline. Homepage configuration saves explicitly as a unit and does not use content-publication autosave semantics.
+- Keep derived sections restricted to publicly eligible source records and silently omit empty or no-longer-eligible selections.
+- Preserve `PUBLIC_HOMEPAGE_CACHE_TAG` and targeted root revalidation from homepage and contributing content mutations.

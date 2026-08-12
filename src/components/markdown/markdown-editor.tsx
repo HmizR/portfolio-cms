@@ -19,8 +19,8 @@ type AutosaveResult = { ok: true; savedAt: string } | { ok: false; message: stri
 type PreviewResult = { ok: true; html: string } | { ok: false; message: string };
 
 interface MarkdownEditorProps {
-  autosaveAction: (input: unknown) => Promise<AutosaveResult>;
-  contentId: string;
+  autosaveAction?: (input: unknown) => Promise<AutosaveResult>;
+  contentId?: string;
   initialPreviewHtml: string;
   media?: MediaRecord[];
   onChange: (markdown: string) => void;
@@ -144,6 +144,7 @@ export function MarkdownEditor({ autosaveAction, contentId, initialPreviewHtml, 
   }, [value]);
 
   useEffect(() => {
+    if (!autosaveAction || !contentId) return;
     if (value === lastSavedRef.current) return;
     setAutosaveStatus("Unsaved changes");
     const timeout = window.setTimeout(async () => {
@@ -184,7 +185,7 @@ export function MarkdownEditor({ autosaveAction, contentId, initialPreviewHtml, 
         <div className={cn("min-w-0", mode === "preview" && "hidden", mode === "split" && "border-b border-slate-200 lg:border-b-0 lg:border-r")} ref={mountRef} />
         <div className={cn("min-w-0 overflow-auto p-5 sm:p-7", mode === "markdown" && "hidden")}><MarkdownContent html={previewHtml} /></div>
       </div>
-      <div aria-live="polite" className="border-t border-slate-200 bg-slate-50 px-4 py-2 text-xs text-slate-500">{autosaveStatus}. {uploading ? "Keep this editor open while the image uploads." : "Drop or paste an image here. Autosave never changes publication status."}</div>
+      <div aria-live="polite" className="border-t border-slate-200 bg-slate-50 px-4 py-2 text-xs text-slate-500">{autosaveAction ? `${autosaveStatus}. ` : "Changes are saved with the surrounding form. "}{uploading ? "Keep this editor open while the image uploads." : "Drop or paste an image here."}</div>
     </section>
   );
 }

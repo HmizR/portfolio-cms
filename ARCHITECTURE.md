@@ -625,9 +625,29 @@ type
 sort_order
 is_visible
 configuration_json
+page_id
 created_at
 updated_at
 ```
+
+Homepage configuration is implemented as a finite section registry owned by the homepage feature,
+not as a generic component or plugin registry. Every supported section type has a dedicated Zod
+schema; the complete ordered section list is validated before transactional persistence.
+
+`configuration_json` may store only the bounded options required by its section type, such as
+Markdown introduction content or an item count. Stable custom-page identity belongs in the nullable
+`page_id` foreign key with `ON DELETE SET NULL`. Configuration must not store
+arbitrary React component names, HTML, CSS, public URLs for internal records, or editor-specific
+state.
+
+The public `/` route reads visible sections in persisted order. Content-derived sections resolve
+only publicly eligible records and reuse the existing feature queries and shared Markdown renderer.
+Homepage reads use a dedicated cache tag. Homepage mutations invalidate `/`; mutations to content
+that can feed a visible homepage section also invalidate `/` without disabling caching globally.
+
+The admin surface lives at `/admin/homepage`. Every mutation independently authenticates, validates
+external input, and persists reordering transactionally. Ordering must include an accessible
+keyboard alternative to pointer-based interaction.
 
 `configuration_json` is allowed here because section options vary by type.
 

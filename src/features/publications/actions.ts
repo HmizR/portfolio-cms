@@ -12,7 +12,7 @@ import { generateSlug } from "@/lib/slug";
 
 function parseAuthors(value: FormDataEntryValue | null): unknown { if (typeof value !== "string") return []; try { return JSON.parse(value) as unknown; } catch { return null; } }
 function values(formData: FormData) { return { id: formData.get("id"), title: formData.get("title"), slug: formData.get("slug"), abstract: formData.get("abstract"), contentMarkdown: formData.get("contentMarkdown"), publicationType: formData.get("publicationType"), venue: formData.get("venue"), publisher: formData.get("publisher"), publicationDate: formData.get("publicationDate"), doi: formData.get("doi"), externalUrl: formData.get("externalUrl"), pdfMediaId: formData.get("pdfMediaId"), authors: parseAuthors(formData.get("authors")), isFeatured: formData.get("isFeatured") === "on", seoTitle: formData.get("seoTitle"), seoDescription: formData.get("seoDescription"), canonicalUrl: formData.get("canonicalUrl"), ogMediaId: formData.get("ogMediaId"), ogImageUrl: formData.get("ogImageUrl") }; }
-function invalidate(slugs: string[]) { updateTag(PUBLIC_PUBLICATIONS_CACHE_TAG); for (const slug of new Set(slugs)) revalidatePath(`/publications/${slug}`); revalidatePath("/publications"); revalidatePath("/cv"); revalidatePath("/admin/publications"); }
+function invalidate(slugs: string[]) { updateTag(PUBLIC_PUBLICATIONS_CACHE_TAG); for (const slug of new Set(slugs)) revalidatePath(`/publications/${slug}`); revalidatePath("/"); revalidatePath("/publications"); revalidatePath("/cv"); revalidatePath("/admin/publications"); }
 
 export async function createPublicationAction(_state: CreatePublicationActionState, formData: FormData): Promise<CreatePublicationActionState> {
   await requireAdmin();

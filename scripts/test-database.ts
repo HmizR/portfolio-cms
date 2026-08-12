@@ -59,7 +59,7 @@ export async function prepareTestDatabase(): Promise<string> {
   try {
     await migrate(database, { migrationsFolder: "drizzle" });
     await pool.query(
-      "truncate table cv_project_selections, cv_sections, publication_authors, publications, education, experience, skills, project_technologies, technologies, projects, post_tags, tags, posts, navigation_items, pages, site_settings, social_links, profiles, media, rate_limits, verifications, sessions, accounts, users restart identity cascade",
+      "truncate table homepage_sections, cv_project_selections, cv_sections, publication_authors, publications, education, experience, skills, project_technologies, technologies, projects, post_tags, tags, posts, navigation_items, pages, site_settings, social_links, profiles, media, rate_limits, verifications, sessions, accounts, users restart identity cascade",
     );
     await pool.query(`insert into cv_sections (id, section_type, sort_order, is_visible) values
       ('10000000-0000-4000-8000-000000000001', 'profile', 0, true),
@@ -68,6 +68,14 @@ export async function prepareTestDatabase(): Promise<string> {
       ('10000000-0000-4000-8000-000000000004', 'projects', 3, true),
       ('10000000-0000-4000-8000-000000000005', 'publications', 4, true),
       ('10000000-0000-4000-8000-000000000006', 'skills', 5, true)`);
+    await pool.query(`insert into homepage_sections (id, section_type, sort_order, is_visible, configuration_json) values
+      ('20000000-0000-4000-8000-000000000001', 'markdown', 0, true, '{"heading":"About","markdown":"Welcome to my academic and professional portfolio. Use the homepage editor to introduce your work, research interests, and current focus."}'::jsonb),
+      ('20000000-0000-4000-8000-000000000002', 'featured_projects', 1, true, '{"heading":"Featured projects","itemCount":3}'::jsonb),
+      ('20000000-0000-4000-8000-000000000003', 'recent_posts', 2, true, '{"heading":"Recent writing","itemCount":3}'::jsonb),
+      ('20000000-0000-4000-8000-000000000004', 'featured_publications', 3, true, '{"heading":"Featured publications","itemCount":3}'::jsonb),
+      ('20000000-0000-4000-8000-000000000005', 'education', 4, false, '{"heading":"Education","itemCount":3}'::jsonb),
+      ('20000000-0000-4000-8000-000000000006', 'experience', 5, false, '{"heading":"Experience","itemCount":3}'::jsonb),
+      ('20000000-0000-4000-8000-000000000007', 'page_excerpt', 6, false, '{"heading":"More about my work"}'::jsonb)`);
   } finally {
     await pool.end();
   }

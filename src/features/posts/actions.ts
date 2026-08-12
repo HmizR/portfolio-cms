@@ -56,6 +56,7 @@ function revalidatePostRoutes(slugs: string[]): void {
   for (const slug of new Set(slugs)) revalidatePath(`/posts/${slug}`);
   revalidatePath("/posts");
   revalidatePath("/feed.xml");
+  revalidatePath("/");
   revalidatePath("/admin/posts");
 }
 

@@ -3,9 +3,7 @@ import { expect, test } from "@playwright/test";
 test("renders the desktop public shell and health endpoint", async ({ page, request }) => {
   await page.goto("/");
 
-  await expect(
-    page.getByRole("heading", { name: "Studying how people learn with intelligent systems." }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Research overview" })).toBeVisible();
   await expect(page.getByRole("banner")).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Primary navigation" })).toBeVisible();
   await expect(page.getByRole("complementary", { name: "Dr. Maya Chen" })).toBeVisible();
